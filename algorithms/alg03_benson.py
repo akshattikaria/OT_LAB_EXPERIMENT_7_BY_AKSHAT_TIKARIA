@@ -108,16 +108,18 @@ def initialize(problem: Any, n_points: int = 25, seed: int = 42) -> Tuple[List[n
 
 
 def step(problem: Any, u0: np.ndarray,
+         w: Optional[np.ndarray] = None,
          x0: Optional[np.ndarray] = None) -> Tuple[np.ndarray, np.ndarray, float]:
     """Solves one Benson projection subproblem."""
     if x0 is None:
         x0 = 0.5 * (problem.xl + problem.xu)
 
     bounds = list(zip(problem.xl, problem.xu))
+    weights = np.ones_like(u0) if w is None else np.asarray(w)
 
     def benson_obj(x):
         f, cv = problem.evaluate(x)
-        shortfall = np.maximum(0.0, u0 - f)
+        shortfall = np.maximum(0.0, u0 - f) * weights
         violation = np.maximum(0.0, f - u0)
         return float(-np.sum(shortfall) + 1e4 * np.sum(violation) + 1e4 * cv)
 

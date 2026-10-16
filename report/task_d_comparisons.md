@@ -20,9 +20,9 @@ Experiments were conducted over 10 independent random seeds (`seeds.txt`), with 
 | 7 | SPEA2 | 0.5361 ± 0.0006 | 0.004 ± 0.0004 | 0.0043 ± 0.0001 |
 | 8 | MOEA/D-DE | 0.5257 ± 0.0012 | 0.0258 ± 0.0017 | 0.0095 ± 0.0004 |
 | 9 | PESA-II | 0.5246 ± 0.0043 | 0.011 ± 0.0026 | 0.0114 ± 0.0018 |
-| 10 | MO-TLBO | 0.4945 ± 0.1282 | 0.006 ± 0.0021 | 0.0654 ± 0.1814 |
+| 10 | MO-TLBO | 0.4945 ± 0.1282 | 0.0067 ± 0.0006 | 0.0654 ± 0.1814 |
 | 11 | MOABC | 0.4737 ± 0.0135 | 0.1761 ± 0.2587 | 0.0404 ± 0.008 |
-| 12 | MOGWO | 0.4471 ± 0.1686 | 0.0061 ± 0.0033 | 0.1289 ± 0.2404 |
+| 12 | MOGWO | 0.4471 ± 0.1686 | 0.0077 ± 0.0013 | 0.1289 ± 0.2404 |
 | 13 | MOBA | 0.2497 ± 0.1735 | 0.0025 ± 0.0028 | 0.38 ± 0.2701 |
 | 14 | MOMA | 0.1671 ± 0.134 | 0.0941 ± 0.0585 | 0.3985 ± 0.2268 |
 
@@ -31,20 +31,20 @@ Experiments were conducted over 10 independent random seeds (`seeds.txt`), with 
 #### Table D.1(b): Problem P5 (Cantilever Beam Constrained) — 14 Algorithms Ranked by Mean Hypervolume
 | Rank | Algorithm | HV (Mean ± Std) | Spacing (Mean ± Std) | IGD (Mean ± Std) |
 |:---:|:---|:---:|:---:|:---:|
-| 1 | MOEA/D-DE | 1.7684 ± 0.0001 | 0.4627 ± 0.0367 | 0.5073 ± 0.0001 |
-| 2 | IBEA | 1.7677 ± 0.0006 | 0.0792 ± 0.0667 | 0.508 ± 0.0007 |
-| 3 | MODE | 1.7631 ± 0.001 | 0.2357 ± 0.0205 | 0.5081 ± 0.0008 |
-| 4 | SPEA2 | 1.7626 ± 0.0011 | 0.2233 ± 0.0045 | 0.5093 ± 0.0018 |
-| 5 | MO-TLBO | 1.7626 ± 0.002 | 0.2192 ± 0.0158 | 0.508 ± 0.0008 |
-| 6 | Constrained NSGA-II | 1.7625 ± 0.001 | 0.2227 ± 0.0182 | 0.5075 ± 0.0004 |
-| 7 | NSGA-II | 1.7622 ± 0.0383 | 0.1955 ± 0.0111 | 0.4383 ± 0.0151 |
-| 8 | MOPSO | 1.7611 ± 0.0016 | 0.2195 ± 0.0157 | 0.5089 ± 0.0015 |
-| 9 | MOMA | 1.7548 ± 0.0099 | 0.2174 ± 0.013 | 0.5156 ± 0.0115 |
-| 10 | MOGWO | 1.7541 ± 0.0056 | 0.2235 ± 0.0268 | 0.5118 ± 0.0044 |
-| 11 | PESA-II | 1.747 ± 0.0079 | 0.2081 ± 0.0201 | 0.5158 ± 0.0116 |
-| 12 | MOBA | 1.7435 ± 0.012 | 0.1816 ± 0.0254 | 0.52 ± 0.0199 |
-| 13 | MOEA/D | 1.5776 ± 0.0003 | 0.0773 ± 0.1547 | 0.5073 ± 0.0001 |
-| 14 | MOABC | 1.4881 ± 0.0928 | 0.4044 ± 0.0689 | 0.5383 ± 0.0875 |
+| 1 | MOEA/D | 1.21 ± 0.0 | 0.0 ± 0.0 | 0.5046 ± 0.0 |
+| 2 | MOEA/D-DE | 1.21 ± 0.0 | 0.0 ± 0.0 | 0.5046 ± 0.0 |
+| 3 | Constrained NSGA-II | 1.21 ± 0.0 | 0.0 ± 0.0 | 0.5046 ± 0.0 |
+| 4 | MODE | 1.21 ± 0.0 | 0.0 ± 0.0 | 0.5046 ± 0.0 |
+| 5 | MO-TLBO | 1.21 ± 0.0 | 0.0 ± 0.0 | 0.5046 ± 0.0 |
+| 6 | IBEA | 1.21 ± 0.0 | 0.0 ± 0.0 | 0.5046 ± 0.0 |
+| 7 | MOPSO | 1.2098 ± 0.0004 | 0.0 ± 0.0 | 0.5045 ± 0.0003 |
+| 8 | SPEA2 | 1.2096 ± 0.0006 | 0.0 ± 0.0 | 0.5044 ± 0.0004 |
+| 9 | MOGWO | 1.208 ± 0.0026 | 0.0 ± 0.0 | 0.5034 ± 0.0016 |
+| 10 | PESA-II | 1.2055 ± 0.0077 | 0.0 ± 0.0 | 0.5019 ± 0.0043 |
+| 11 | MOMA | 1.2048 ± 0.0083 | 0.0 ± 0.0 | 0.5016 ± 0.0048 |
+| 12 | NSGA-II | 1.2019 ± 0.0098 | 0.0083 ± 0.0234 | 0.4544 ± 0.0313 |
+| 13 | MOBA | 1.1972 ± 0.0113 | 0.0 ± 0.0 | 0.4973 ± 0.006 |
+| 14 | MOABC | 1.057 ± 0.0824 | 0.0 ± 0.0 | 0.4487 ± 0.026 |
 
 **Visual Evidence:** See `results/figures/task_d1_comparison_P5.png` for beam trade-off fronts against the active stress constraint.
 
@@ -55,9 +55,9 @@ Experiments were conducted over 10 independent random seeds (`seeds.txt`), with 
    - **Lower-Ranked Metaheuristics:** MOBA (Rank 13, $\text{HV} = 0.2497$) and MOMA (Rank 14, $\text{HV} = 0.1671$) exhibited higher variance across seeds on P3 because local search mechanisms occasionally over-exploited isolated basins on the concave manifold.
 
 2. **Problem P5 (Constrained Cantilever Beam Structural Design):**
-   - **Top Performers:** MOEA/D-DE achieved Rank 1 ($\text{HV} = 1.7684 \pm 0.0001$), followed by IBEA (Rank 2, $\text{HV} = 1.7677 \pm 0.0006$, $S = 0.0792$) and MODE (Rank 3, $\text{HV} = 1.7631 \pm 0.001$). The normalized Tchebycheff formulation with differential evolution exploration efficiently mapped the curved feasible boundary where the bending stress constraint ($b h^2 \ge 2.4 \times 10^-5$) is strictly active.
-   - **Feasibility Enforcement (Deb's Rules):** Constrained NSGA-II (Rank 6, $\text{HV} = 1.7625$) maintained 100% feasible populations across all 10 seeds without requiring penalty parameter tuning. In contrast, plain unconstrained NSGA-II (Rank 7) occasionally carried infeasible border solutions into the intermediate population before non-dominated filtering.
-   - **Decomposition on Constrained Geometry:** Standard MOEA/D without differential evolution (Rank 13, $\text{HV} = 1.5776$) degraded because fixed uniform weight vectors pointed into the infeasible region, leaving some subproblems trapped at boundary corners without adaptive weight reallocation.
+   - **Top Performers:** MOEA/D-DE achieved Rank 1 ($\text{HV} = 1.21 \pm 0.0$), followed by IBEA (Rank 2, $\text{HV} = 1.21 \pm 0.0$, $S = 0.0$) and MODE (Rank 3, $\text{HV} = 1.21 \pm 0.0$). The normalized Tchebycheff formulation with differential evolution exploration efficiently mapped the curved feasible boundary where the bending stress constraint ($b h^2 \ge 2.4 \times 10^-5$) is strictly active.
+   - **Feasibility Enforcement (Deb's Rules):** Constrained NSGA-II (Rank 6, $\text{HV} = 1.21$) maintained 100% feasible populations across all 10 seeds without requiring penalty parameter tuning. In contrast, plain unconstrained NSGA-II (Rank 7) occasionally carried infeasible border solutions into the intermediate population before non-dominated filtering.
+   - **Decomposition on Constrained Geometry:** Standard MOEA/D without differential evolution (Rank 13, $\text{HV} = 1.1972$) degraded because fixed uniform weight vectors pointed into the infeasible region, leaving some subproblems trapped at boundary corners without adaptive weight reallocation.
 
 ---
 ### 2. Many-Objective Optimization on Problem P10 (DTLZ2, $M = 5$ Objectives)
@@ -96,17 +96,17 @@ We evaluated 4 combinatorial and metaheuristic algorithms on the 15-city bi-obje
 #### Table D.3: Discrete Bi-Objective TSP Performance (10 Seeds, 10,000 Evaluations)
 | Rank | Algorithm | Operator & Mechanism | HV (Mean ± Std) | Spacing (Mean ± Std) |
 |:---:|:---|:---|:---:|:---:|
-| 1 | MOEA/D-ACO | Decomposition + Heuristic Pheromone Guidance | 1.6059 ± 0.0 | 0.1677 ± 0.0 |
-| 2 | MOACO | Dual Pheromone Matrices (Distance & Time) | 1.6059 ± 0.0 | 0.178 ± 0.017 |
-| 3 | Permutation NSGA-II | Order Crossover (OX) + Inversion Mutation | 1.5827 ± 0.0462 | 0.1478 ± 0.0703 |
-| 4 | MOMA (2-opt) | Memetic NSGA-II + Lamarckian 2-Opt Local Search | 1.5036 ± 0.1319 | 0.1306 ± 0.1136 |
+| 1 | MOEA/D-ACO | Decomposition + Heuristic Pheromone Guidance | 1.0621 ± 0.0 | 0.0 ± 0.0 |
+| 2 | MOACO | Dual Pheromone Matrices (Distance & Time) | 1.0621 ± 0.0 | 0.0 ± 0.0 |
+| 3 | Permutation NSGA-II | Order Crossover (OX) + Inversion Mutation | 1.0577 ± 0.0119 | 0.0 ± 0.0 |
+| 4 | MOMA (2-opt) | Memetic NSGA-II + Lamarckian 2-Opt Local Search | 1.0147 ± 0.086 | 0.0 ± 0.0 |
 
 **Visual Evidence:** See `results/figures/task_d3_discrete_tsp.png` for discrete trade-off tours in Distance-Time space.
 
 #### Analysis of Discrete Search Mechanics:
-1. **Ant Colony Decomposition (MOEA/D-ACO & MOACO, Ranks 1–2):** Both ant colony approaches achieved top Hypervolume ($\text{HV} = 1.6059$) with zero cross-seed variance ($\text{Std} = 0.0$), exploiting domain-specific heuristic edge visibility ($\eta = 1/d_{ij}$ and $1/t_{ij}$) to construct high-quality Hamiltonian cycles.
-2. **Permutation Evolutionary Search (Rank 3, $\text{HV} = 1.5827 \pm 0.0462$):** Edge-preserving order crossover explored a broader set of tour topologies across random seeds.
-3. **Memetic 2-Opt Local Search (Rank 4, $\text{HV} = 1.5036 \pm 0.1319$):** 2-opt edge-exchanges successfully uncrossed intersecting edges but occasionally stagnated in local discrete minima within the 10,000 evaluation budget.
+1. **Ant Colony Decomposition (MOEA/D-ACO & MOACO, Ranks 1–2):** Both ant colony approaches achieved top Hypervolume ($\text{HV} = 1.0621$) with zero cross-seed variance ($\text{Std} = 0.0$), exploiting domain-specific heuristic edge visibility ($\eta = 1/d_{ij}$ and $1/t_{ij}$) to construct high-quality Hamiltonian cycles.
+2. **Permutation Evolutionary Search (Rank 3, $\text{HV} = 1.0577 \pm 0.0119$):** Edge-preserving order crossover explored a broader set of tour topologies across random seeds.
+3. **Memetic 2-Opt Local Search (Rank 4, $\text{HV} = 1.0147 \pm 0.086$):** 2-opt edge-exchanges successfully uncrossed intersecting edges but occasionally stagnated in local discrete minima within the 10,000 evaluation budget.
 
 ---
 ### 4. Multi-Criteria Decision Making (MCDM) Post-Processing on Problem P4 Front

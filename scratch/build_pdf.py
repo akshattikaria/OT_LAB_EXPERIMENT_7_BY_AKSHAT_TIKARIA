@@ -6,6 +6,7 @@ figures_dir = os.path.abspath('results/figures')
 # Order of markdown files for the combined report
 md_files = [
     ('Cover Page', None),  # We'll inline the cover
+    ('Executive Summary', 'executive_summary.md'),
     ('Task A — Implementation Log & Unit Test Summary', 'task_a_log.md'),
     ('Problem Bank — P1 to P14 Specifications', 'problem_bank.md'),
     ('Task B — Master Comparison Table (37 Algorithms)', 'task_b_master_table.md'),
@@ -160,7 +161,9 @@ for title, fname in md_files:
     
     section_html = md_to_html_basic(md_text)
     # Replace figure references with absolute paths for Edge
-    section_html = section_html.replace('results/figures/', figures_dir.replace('\\', '/') + '/')
+    fig_url = figures_dir.replace('\\', '/')
+    section_html = section_html.replace('../results/figures/', fig_url + '/')
+    section_html = section_html.replace('results/figures/', fig_url + '/')
     
     body_parts.append(f'<div style="page-break-before: always;">')
     body_parts.append(section_html)
@@ -170,6 +173,8 @@ full_html = f"""<!DOCTYPE html>
 <html>
 <head>
 <meta charset="utf-8">
+<title>Akshat Tikaria - B.Tech Optimization Techniques Lab 7 Report - Roll 241070005</title>
+<meta name="author" content="Akshat Tikaria">
 <script>
 MathJax = {{
   tex: {{ inlineMath: [['\\\\(','\\\\)']], displayMath: [['\\\\[','\\\\]']] }},

@@ -359,9 +359,9 @@ def run_biobjective_comparison(p_name: str = "P3", n_seeds: int = 10, budget: in
     for num, name in algs:
         g = grouped.get(name, {'hv': [], 'sp': [], 'igd': [], 'best_front': None})
         fronts_dict[name] = g['best_front']
-        hv_arr = g['hv']
-        sp_arr = g['sp']
-        igd_arr = g['igd']
+        hv_arr = [x for x in g['hv'] if x is not None]
+        sp_arr = [x for x in g['sp'] if x is not None]
+        igd_arr = [x for x in g['igd'] if x is not None]
 
         records.append({
             'Problem': p_name,
@@ -444,8 +444,8 @@ def run_manyobjective_comparison(n_seeds: int = 10, budget: int = 10000, pool=No
     records = []
     for num, name in algs:
         g = grouped.get(name, {'hv': [], 'igd': []})
-        hv_arr = g['hv']
-        igd_arr = g['igd']
+        hv_arr = [x for x in g['hv'] if x is not None]
+        igd_arr = [x for x in g['igd'] if x is not None]
 
         records.append({
             'Algorithm': name,
@@ -530,8 +530,8 @@ def run_discrete_comparison(n_seeds: int = 10, budget: int = 10000, pool=None):
     for alg_key, alg_name in algs:
         g = grouped.get(alg_name, {'hv': [], 'sp': [], 'best_front': None})
         fronts_dict[alg_name] = g['best_front']
-        hv_arr = g['hv']
-        sp_arr = g['sp']
+        hv_arr = [x for x in g['hv'] if x is not None]
+        sp_arr = [x for x in g['sp'] if x is not None]
 
         records.append({
             'Algorithm': alg_name,

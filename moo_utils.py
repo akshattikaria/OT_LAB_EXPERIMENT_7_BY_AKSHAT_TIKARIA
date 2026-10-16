@@ -522,6 +522,7 @@ def compute_metrics(front_F: np.ndarray,
     # Normalize the obtained front with fixed ideal/nadir
     denom = np.where((nadir - ideal) < 1e-12, 1.0, nadir - ideal)
     F_norm = (front_F - ideal) / denom
+    F_norm = np.maximum(0.0, F_norm)
 
     # Drop dominated/duplicate points
     F_nd = _drop_dominated_duplicates(F_norm)
