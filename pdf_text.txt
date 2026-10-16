@@ -1,0 +1,585 @@
+=== PAGE 1 ===
+Lab Assignment 7 — Multiobjective
+Optimization: 37 Algorithms, Trade-offs and
+Applications
+Optimization Techniques Lab · Department of Artificial Intelligence & Data Science ·
+M.Tech · Based on Chapter 5 (Parts 1–4 and Bonus Module 5E) · Issued: 5 October 2026
+1. Aim and Learning Outcomes
+Real design problems have several conflicting goals, so the answer is a set of trade-offs (a
+Pareto front), not one point. In this lab you will build every multiobjective algorithm taught
+in Chapter 5 from scratch, run each one on realistic problems, and judge each one by
+evidence.
+By the end of this lab you must be able to:
+1. Implement all 37 algorithms from scratch and explain in your own words what each one
+actually does, step by step.
+2. State the advantages and disadvantages of each algorithm, and prove them with your
+own experiments (plots and numbers), not by quoting the slides.
+3. Choose a suitable algorithm for a given problem using convexity, number of objectives,
+variable type, constraints, preferences and budget.
+4. Measure front quality with Hypervolume, IGD and Spacing.
+2. Logistics
+Item Details
+Mode Individual. Every student implements all 37
+algorithms (Task A). Your roll number (the last two
+digits of your registration number) decides the 3
+algorithms for the deep dive (Task C).Lab Assignment 7 — Multiobjective Optimization: 37 Algorithms, T rade- oﬀs and Applications
+Page 1 of 17
+
+=== PAGE 2 ===
+2A. Coding Rules: Every Algorithm Is Written by You
+All 37 algorithms in the catalogue, and every baseline you use, must be implemented by
+you from scratch in Python (using only NumPy, Matplotlib and the standard library), in
+MATLAB (using only base MATLAB, no toolbox functions) or in C++17 (using only the
+standard library; no external optimization or matrix libraries such as Eigen, Armadillo,
+dlib or NLopt). Choose one language and use it throughout. An algorithm that is not
+your own code is not accepted.
+Not allowed: pymoo, Platypus, DEAP, jMetalPy, inspyred, NLopt, dlib, GSL optimizers,
+MATLAB's gamultiobj, paretosearch, ga, particleswarm, simulannealbnd and similar
+toolbox solvers, or any other optimization or evolutionary-computation library, and
+code copied from repositories or AI tools that you cannot explain line by line.
+One exception: for the classical methods (algorithms 1–7) the single-objective or linear-
+programming sub-problem may be solved with scipy.optimize (Python), fmincon,
+fminsearch or linprog (MATLAB); C++ students write their own simple solver (for
+example a simplex routine or gradient descent). The scalarization, the sweep over
+weights, ε  values or targets, the deviation variables and the priority logic must still be
+your own code.
+You must also hand-code the shared tools: dominance test, non-dominated sorting,
+crowding distance, 2-D hypervolume (a Monte-Carlo estimate is acceptable for 3 or
+more objectives), IGD and Spacing. Keep them together in one module, moo_utils.py inItem Details
+Language and toolsPython 3.10+ (NumPy, Matplotlib), MATLAB (base
+MATLAB) or C++17 (standard library only; save
+results as CSV and plot with any tool). Choose one
+language and use it for the whole assignment. All
+algorithms must be coded by you from scratch,
+with no optimization libraries or toolboxes. See
+Section 2A.
+Reproducibility Fix and report random seeds. Stochastic
+algorithms: 10 independent runs, report mean ±
+standard deviation.
+Fair budget When comparing algorithms use the same number
+of function evaluations (suggested: 10,000).Lab Assignment 7 — Multiobjective Optimization: 37 Algorithms, T rade- oﬀs and Applications
+Page 2 of 17
+
+=== PAGE 3 ===
+Python, a moo_utils folder of .m function files in MATLAB, or moo_utils.hpp and
+moo_utils.cpp in C++, and test them on the lecture examples (the car Pareto-front
+example and Deb's constrained-dominance table).
+Write each algorithm as its own module with functions to initialize, evaluate, perform
+one iteration and run, and a docstring (a header comment in MATLAB or C++) listing
+the lecture steps it follows.
+Verification: every algorithm must pass a unit test you wrote for it, and for your three
+deep-dive algorithms the code must also reproduce your hand trace (Task C) on the
+same tiny instance. The report must show these checks.
+Optional: you may compare your final front with a library in a separate, clearly labelled
+sanity-check script. Library output is never submitted as your result.
+Expect a live code walkthrough in the viva: you may be asked to change one line and
+predict the effect.
+2B. Suggested Lab Schedule
+Building 37 algorithms needs steady weekly progress. Use the lab sessions to build and
+test the algorithms listed for that session, and finish tests, plots and write-up at home
+before the next session. The instructor may adjust the plan.
+SessionBuild and test Algorithms
+1 Shared toolkit (moo_utils), problems P1–P14,
+classical and ranking methods1–9
+2 Early evolutionary methods and NSGA-II 10–14
+3 Archive-based and decomposition methods 16–20
+4 Constrained method and first metaheuristics 21–25
+5 Remaining metaheuristics 26–30
+6 Many-objective, indicator, preference and gradient
+methods15, 31–37
+7 Comparison experiments, report, viva preparation Tasks B–FLab Assignment 7 — Multiobjective Optimization: 37 Algorithms, T rade- oﬀs and Applications
+Page 3 of 17
+
+=== PAGE 4 ===
+3. The Algorithm Catalogue (all 37)
+NSGA-III, Goal Programming, Lexicographic, TOPSIS and VIKOR appear in more than one
+lecture deck; each is listed once. The right-hand columns tell you what to investigate and
+which problems from Section 4 exercise the algorithm well. The advantages and
+disadvantages are deliberately not listed: finding them is your job.
+# Algorithm Family (lecture) Core mechanism to
+studyTest
+problems
+1 Weighted Sum Classical (Part 1) Scalarize with fixed
+weights, then vary the
+weightsP1, P3, P4
+2 ε-Constraint Classical (Part 1) Optimize one objective,
+bound the rest by εᵢP2, P3, P5
+3 Benson's Method Classical (Part 1) Maximize weighted
+distance past a
+reference pointP1, P7
+4 Weight Metric (p-
+norm,
+Tchebycheff)Classical (Part 1) Weighted distance to
+the ideal point; p = 1, 2, ∞P1, P3
+5 Value Function Classical (Part 1) Optimize the decision-
+maker's utility functionP4, P14
+6 Goal ProgrammingClassical (Part 1,
+5E)Targets and deviation
+variables d⁺, d⁻P11, P7
+7 Lexicographic Classical (Part 1,
+5E)Strict priority order,
+sequential optimization
+with toleranceP11, P7
+8 TOPSIS Ranking / MCDM
+(Part 1, 5E)Rank by closeness to
+ideal and anti-ideal
+solutionsP12, plus the
+front from
+P4
+9 VIKOR Ranking / MCDM
+(Part 1, 5E)Compromise ranking
+from S, R and Q with
+parameter vP12, plus the
+front from
+P4Lab Assignment 7 — Multiobjective Optimization: 37 Algorithms, T rade- oﬀs and Applications
+Page 4 of 17
+
+=== PAGE 5 ===
+# Algorithm Family (lecture) Core mechanism to
+studyTest
+problems
+10 VEGA Non-elitist (Part 2)Sub-populations, each
+selected by one
+objectiveP2, P3
+11 MOGA Non-elitist (Part 2)Rank = dominance
+count, fitness sharingP3, P5
+12 NSGA Non-elitist (Part 2)Non-dominated fronts
+with sharing inside each
+frontP5, P7
+13 NPGA Non-elitist (Part 2)Pareto tournament
+against a comparison
+set, niche-count tie-
+breakP3, P5
+14 NSGA-II Elitist (Part 3) Fast non-dominated
+sort, crowding distance,
+parent+offspring elitismP3, P5, P6
+15 NSGA-III Elitist, many-
+objective (Part 3,
+5E)Reference points
+replace crowding
+distanceP10 (M = 3
+and 5)
+16 SPEA2 Elitist (Part 3) Strength, raw fitness, k-
+th neighbour density,
+fixed-size archiveP4, P5
+17 PESA-II Elitist (Part 3) Grid regions of the
+archive, region-based
+selectionP3, P5
+18 MOEA/D Elitist,
+decomposition
+(Part 3)Many scalar sub-
+problems (Tchebycheff)
+solved cooperatively
+through neighboursP3, P10
+19 MOEA/D-DE Elitist,
+decomposition
+(Part 3)MOEA/D with
+differential-evolution
+variationP3, P5Lab Assignment 7 — Multiobjective Optimization: 37 Algorithms, T rade- oﬀs and Applications
+Page 5 of 17
+
+=== PAGE 6 ===
+# Algorithm Family (lecture) Core mechanism to
+studyTest
+problems
+20 MOEA/D-ACO Elitist,
+decomposition
+(Part 3)MOEA/D with ant-
+colony pheromone
+constructionP8
+21 Constrained
+NSGA-IIConstrained (Part
+4)Deb's feasibility rules
+inside crowded
+comparisonP5, P6, P7
+22 MOPSO Swarm (Part 4) Velocity update from
+personal best and
+archive-chosen global
+bestP4, P5
+23 MOGWO Swarm (Part 4) α, β, δ  leaders taken
+from the archive,
+encirclingP5, P9
+24 MOABC Swarm (Part 4) Employed, onlooker and
+scout bees with
+dominance-based
+greedy choiceP3, P6
+25 MOACO Swarm (Part 4) Two pheromone
+matrices, probabilistic
+route constructionP8
+26 MOSA Physics-inspired
+(Part 4)Neighbour moves,
+Boltzmann acceptance,
+cooling scheduleP3, P5
+27 MODE Evolutionary (Part
+4)DE mutation and
+crossover, trial replaces
+target only if it
+dominatesP3, P5
+28 MO-TLBO Human-inspired
+(Part 4)Teacher phase and
+learner phase, shrinking
+teaching factorP3, P5
+29 MOBA Swarm (Part 4) Frequency-driven
+velocity, loudness and
+pulse-rate schedulesP3, P4Lab Assignment 7 — Multiobjective Optimization: 37 Algorithms, T rade- oﬀs and Applications
+Page 6 of 17
+
+=== PAGE 7 ===
+4. Problem Bank (14 problem statements)
+All objectives are stated in their natural direction. Convert every maximization to
+minimization before running dominance checks (Max f ≡ Min −f).# Algorithm Family (lecture) Core mechanism to
+studyTest
+problems
+30 MOMA Hybrid (Part 4) NSGA-II global search
+plus hill-climbing local
+searchP5, P9
+31 RVEA Many-objective
+(5E)Reference vectors,
+angle-penalized
+distanceP10
+32 IBEA Indicator-based
+(5E)ε-indicator fitness, no
+explicit diversity stepP3, P14
+33 SMS-EMOA Indicator-based
+(5E)Steady-state; discard
+the point with the least
+hypervolume
+contributionP3, P14
+34 HypE Indicator-based
+(5E)Monte-Carlo estimate of
+hypervolume
+contributionsP10
+35 R-NSGA-II Preference-based
+(5E)Decision-maker
+reference point with ε -
+clearingP5, P14
+36 MGDA Gradient-based
+(5E)Min-norm combination
+of gradients gives a
+common descent
+directionP13
+37 GradNorm Gradient-based
+(5E)Adaptive task-loss
+weights from gradient
+normsP13Lab Assignment 7 — Multiobjective Optimization: 37 Algorithms, T rade- oﬀs and Applications
+Page 7 of 17
+
+=== PAGE 8 ===
+For every problem you use, your report must open with a one-page formulation: the
+standard form (min F(x) subject to constraints), the encoding of a solution, how
+constraints are handled, how objectives are normalized, the reference point used for
+hypervolume, and the termination rule. Each problem below lists a scenario, the data, the
+variables, the objectives, the constraints, a quick sanity check you can verify by hand, and
+the questions your experiments must answer.
+P1 — Factory production speed (convex, 1 variable, easy)
+Scenario. A factory runs one line. Faster speed lowers unit cost but hurts quality. The
+plant manager wants the whole cost–quality trade-off curve, not one speed.
+Variable. Production speed x, 1 ≤ x ≤ 10.
+Objectives. Minimize cost f₁ = (x − 3)² and minimize quality loss f₂ = (x − 7)².
+Constraints. Bounds only.
+Sanity check. The Pareto set is 3 ≤ x ≤ 7. At x = 5 the point is (4, 4); at x = 3 it is (0, 16).
+The front is convex: f₂ = (4 − √f₁)².
+Investigate. How many weight settings give distinct points? Do equal steps in weight
+give equal spacing on the front? Compare p = 1, 2 and ∞ for the weight-metric method.
+P2 — Delivery fleet sizing (1 variable, real vs integer)
+Scenario. A courier company decides how many vehicles to deploy. More vehicles cut
+cost per delivery but add coordination delay.
+Variable. Number of vehicles x, 1 ≤ x ≤ 10 (solve once with real x, once with integer x).
+Objectives. Minimize delivery cost f₁ = 100 / x and minimize delay penalty f₂ = x².
+Constraints. Bounds only. Every x is Pareto-optimal.
+Sanity check. x = 2 gives (50, 4); x = 10 gives (10, 100). The front is f₂ = 10000 / f₁².
+Investigate. Because every x is Pareto-optimal, does the algorithm keep the points
+evenly spread or does it cluster at one end? What does an integer x do to the number
+of distinct front points?
+P3 — Non-convex benchmark (ZDT2, n = 10, medium)
+Scenario. A synthetic test problem whose front curves inward, used to expose
+methods that cannot reach dented regions.
+Variables. xᵢ ∈ [0, 1], i = 1…10.Lab Assignment 7 — Multiobjective Optimization: 37 Algorithms, T rade- oﬀs and Applications
+Page 8 of 17
+
+=== PAGE 9 ===
+Objectives. f₁ = x₁; g = 1 + Σ (i = 2…10) x ᵢ  (this is 1 + 9 · Σ  x ᵢ  / (n − 1) with n = 10); f₂ = g · (1 −
+(f₁ / g)²). Minimize both.
+Constraints. Bounds only.
+Sanity check. On the true front x₂ = … = x₁₀ = 0, so g = 1 and f₂ = 1 − f₁² for f₁ in [0, 1]. The
+front is non-convex.
+Investigate. Which methods or weight settings never find the middle of the front? How
+does IGD change with population size and number of generations?
+P4 — Investment portfolio (continuous, equality constraint, medium)
+Scenario. An investor splits capital across four assets and wants every efficient risk–
+return combination.
+Variables. Weights w₁…w₄ ≥ 0 with Σ w ᵢ  = 1.
+Data. Expected returns μ  = (0.08, 0.12, 0.15, 0.10). Covariance matrix Σ , row by row:
+(0.010, 0.002, 0.001, 0.003), (0.002, 0.040, 0.006, 0.004), (0.001, 0.006, 0.090, 0.005),
+(0.003, 0.004, 0.005, 0.020).
+Objectives. Minimize risk w ᵀΣ w and maximize return μᵀ w.
+Constraints. Σwᵢ = 1 (use repair by normalization, or a penalty, and justify your choice).
+Sanity check. w = (0, 0, 1, 0) gives return 0.15 and risk 0.09, the maximum-return end.
+The minimum-risk end is a mixture of assets, not a single asset.
+Investigate. Compare repair against penalty for the equality constraint. Which investor
+profile (conservative, balanced, aggressive) does each point on your front represent?
+P5 — Cantilever beam design (constrained, 2 variables, medium)
+Scenario. A rectangular steel beam fixed at one end carries a tip load. The designer
+wants it light and stiff.
+Data. L = 1 m, P = 1000 N, E = 200 GPa, density 7850 kg/m³.
+Variables. Width b in [0.01, 0.10] m, height h in [0.02, 0.20] m.
+Objectives. Minimize mass f₁ = 7850 · L · b · h and minimize tip deflection f₂ = 4PL³ / (E ·
+b · h³).
+Constraint. Bending stress 6PL / (b · h²) ≤ 250 MPa, equivalent to b · h² ≥ 2.4 × 10⁻⁵.
+Sanity check. (b, h) = (0.01, 0.05) gives mass 3.925 kg, deflection 0.016 m and stress
+240 MPa, so it is feasible.
+Investigate. What fraction of random designs is infeasible? Which constraint-handling
+rule do you use, and how does the front change if you ignore the stress limit?Lab Assignment 7 — Multiobjective Optimization: 37 Algorithms, T rade- oﬀs and Applications
+Page 9 of 17
+
+=== PAGE 10 ===
+P6 — Binh–Korn constrained benchmark (hard constraints)
+Scenario. A standard test with two nonlinear constraints that cut the feasible region
+into an awkward shape.
+Variables. x₁ in [0, 5], x₂ in [0, 3].
+Objectives. Minimize f₁ = 4x₁² + 4x₂² and f₂ = (x₁ − 5)² + (x₂ − 5)².
+Constraints. (x₁ − 5)² + x₂² ≤ 25 and (x₁ − 8)² + (x₂ + 3)² ≥ 7.7.
+Sanity check. (0, 0) gives (0, 50) and is feasible; (5, 3) gives (136, 4) and is feasible.
+These are the two ends of the front.
+Investigate. Apply Deb's three rules by hand to four candidate points, then show your
+algorithm does the same. Does an algorithm without feasibility rules still return
+feasible points?
+P7 — Water allocation with environmental flow (linear trade-off)
+Scenario. A river basin authority shares 90 million m³ between farmers and industry
+after reserving 10 million m³ for the environment.
+Variables. x₁ = agriculture, x₂ = industry (million m³).
+Objectives. Maximize agricultural yield f₁ = 0.8x₁ and industrial output f₂ = 1.2x₂.
+Constraints. x₁ + x₂ ≤ 90, x₁ ≥ 10, x₂ ≥ 20.
+Sanity check. The front is the line x₁ + x₂ = 90 from (10, 80), giving (8, 96), to (70, 20),
+giving (56, 24).
+Investigate. Convert the maximizations to minimizations first. Does your front lie
+exactly on the line? Which points does a decision-maker with reference point (40, 50)
+prefer?
+P8 — Bi-objective delivery routing (discrete, TSP, hard)
+Scenario. A courier visits 15 customers once and returns to the depot, and cares about
+both distance and travel time because traffic differs by road.
+Data. Coordinates uniform in [0, 100]² using random seed 7 (numpy.random.seed(7) in
+Python, rng(7) in MATLAB, std::mt19937 with seed 7 in C++). Random streams differ
+between languages, so print the coordinates you used in your report. d ᵢⱼ  is Euclidean
+distance. Travel time t ᵢⱼ  = d ᵢⱼ  · u ᵢⱼ  with symmetric u ᵢⱼ  ~ U(0.5, 2.0).
+Solution. A permutation of the 15 cities (a closed tour).
+Objectives. Minimize total distance and total time.
+Constraints. Every city exactly once.Lab Assignment 7 — Multiobjective Optimization: 37 Algorithms, T rade- oﬀs and Applications
+Page 10 of 17
+
+=== PAGE 11 ===
+Sanity check. A random tour is valid but poor; compare your result with a nearest-
+neighbour tour for each objective alone.
+Investigate. Which permutation operators (order crossover, swap or inversion
+mutation) work? How different are the shortest-distance and shortest-time tours?
+P9 — Feature selection (binary, medium)
+Scenario. A diagnostic classifier should be accurate while using as few measurements
+as possible.
+Data. The Wisconsin breast-cancer dataset (30 features), loaded with scikit-learn in
+Python or from a CSV file in MATLAB and C++ (the instructor provides the CSV). You
+may load the data with these tools, but the 5-NN classifier and the 5-fold cross-
+validation must be coded by you.
+Solution. A 0/1 mask of length 30 with at least one 1.
+Objectives. Minimize error = 1 − cross-validated accuracy and minimize the number of
+selected features.
+Constraints. At least one feature selected.
+Sanity check. The all-ones mask is your accuracy baseline.
+Investigate. What is the smallest feature set within 1 percentage point of the baseline
+accuracy? Which features appear in most front solutions?
+P10 — Many-objective benchmark (DTLZ2, M = 3 and M = 5, hard)
+Scenario. A test where the number of objectives grows, showing why dominance and
+crowding lose power.
+Variables. n = M + 9 variables in [0, 1].
+Objectives. g = Σ  over i ≥ M of (x ᵢ  − 0.5)². f₁ = (1 + g) · Π (i = 1…M−1) cos(x ᵢ π/2). For m =
+2…M, f_m = (1 + g) · Π (i = 1…M−m) cos(x ᵢ π/2) · sin(x₍M−m+1₎π/2). Minimize all.
+Sanity check. When g = 0, Σ  f_m² = 1 exactly. Use this to build the true front for IGD.
+Investigate. What fraction of a random population is non-dominated at M = 3 versus M
+= 5? How does that change selection pressure?
+P11 — Production planning (goals and priorities)
+Scenario. A workshop makes products A and B each week and has targets for profit
+and volume.
+Variables. xA, xB ≥ 0 (units per week).Lab Assignment 7 — Multiobjective Optimization: 37 Algorithms, T rade- oﬀs and Applications
+Page 11 of 17
+
+=== PAGE 12 ===
+Objectives. Maximize profit f₁ = 4xA + 6xB and total units f₂ = xA + xB.
+Constraints. Labour 2xA + 3xB ≤ 1200 hours; material 4xA + 2xB ≤ 1600 kg.
+Goals (Goal Programming). Profit ≥ 2400 and units ≥ 600.
+Priorities (Lexicographic). Profit first, units second.
+Sanity check. The feasible corners are (0, 0), (400, 0), (300, 200) and (0, 400).
+Maximum profit 2400 occurs at (300, 200) and at (0, 400) and everywhere between
+them. Maximum units is 500 at (300, 200), so the units goal of 600 can never be met
+and Goal Programming leaves a shortfall of at least 100.
+Investigate. Solve with unit-weight deviations and with normalized weights, and with
+Lexicographic. Explain why the profit tie must be broken by the second priority.
+P12 — Supplier selection (MCDM ranking)
+Scenario. A purchasing team must rank five suppliers on four criteria with weights (0.3,
+0.3, 0.2, 0.2).
+Investigate. First find which suppliers are Pareto-optimal. Rank with TOPSIS and VIKOR
+(try v = 0.25, 0.5, 0.75). Shift one weight by 0.1: does the ranking flip? Which method
+protects against one very bad criterion, and why?
+P13 — Multi-task learning (differentiable)
+Scenario. A shared model serves two tasks whose gradients pull in different
+directions.
+Part (a), toy. x ∈ R², f₁ = ‖ x − a ‖ ², f₂ = ‖ x − b ‖ ², a = (3, 3), b = (−3, −3), start at (0, 5).
+Sanity check: the Pareto set is the segment from a to b, i.e. x₁ = x₂ with −3 ≤ x₁ ≤ 3.SupplierCost, $k (min)Quality, /10 (max)Delivery, days (min)Reliability, % (max)
+S1 120 8 10 92
+S2 100 7 14 88
+S3 140 9 7 95
+S4 90 6 18 80
+S5 130 8 9 90Lab Assignment 7 — Multiobjective Optimization: 37 Algorithms, T rade- oﬀs and Applications
+Page 12 of 17
+
+=== PAGE 13 ===
+Part (b), network. A small shared-body network with a classification head and a
+regression head on synthetic data. Code the forward and backward passes yourself,
+using only NumPy in Python, base matrix operations in MATLAB, or plain std::vector
+arrays in C++.
+Investigate. Compare fixed equal weights with your adaptive method: do both task
+losses fall together? What happens when one task has much larger gradients?
+P14 — Laptop design with a decision-maker preference
+Scenario. A company designs a laptop. The product manager wants a machine near 1.8
+kg that lasts about 12 hours.
+Variables. Screen size x₁ in [13, 17] inches, battery capacity x₂ in [40, 90] Wh.
+Objectives. Minimize weight f₁ = 0.4 + 0.05x₁ + 0.012x₂ kg and maximize runtime f₂ =
+0.2x₂ / (0.5 + 0.03x₁) hours.
+Sanity check. (13, 40) gives 1.53 kg and about 9.0 h; (13, 90) gives 2.13 kg and about 20.2
+h. Increasing x₁ worsens both objectives, so every Pareto point has x₁ = 13.
+Investigate. Does your algorithm discover that x₁ = 13 for all front points? Where does
+the reference point (1.8 kg, 12 h) sit relative to the front, and which part of the front
+does a preference-based method focus on?
+5. Tasks
+Task A — Build all 37 algorithms
+Every student implements every algorithm in the catalogue from scratch (Section 2A).
+A1. Shared toolkit. Write moo_utils (moo_utils.py in Python, a folder of .m function files in
+MATLAB, or moo_utils.hpp and moo_utils.cpp in C++) containing the dominance test, fast
+non-dominated sorting, crowding distance, hypervolume, IGD, Spacing and objective
+normalization, plus problems P1–P14 as functions that return objective values and
+constraint violation. Include unit tests on small cases whose answers you can check by
+hand.
+A2. The 37 implementations. For each algorithm submit:
+1. One module with functions to initialize, evaluate, perform one iteration and run, and a
+docstring (a header comment in MATLAB or C++) that lists the lecture steps and the
+default parameters.Lab Assignment 7 — Multiobjective Optimization: 37 Algorithms, T rade- oﬀs and Applications
+Page 13 of 17
+
+=== PAGE 14 ===
+2. A unit test that checks the key rule of the algorithm (for example, that Deb's rules rank
+a feasible point above an infeasible one, or that the reference-point association assigns
+each point to its nearest line).
+3. A run with a fixed seed on at least two problems from its Test problems column (one if
+only one is listed), with a plot of the obtained front (and the true front where known)
+and HV, Spacing, and IGD where the true front is known.
+Each algorithm will be checked for a correct core mechanism, a tested and plotted result,
+and clean, documented code.
+A3. Implementation log. One table with columns: number, algorithm, problems used,
+evaluation budget, HV, IGD, runtime, status (works, partly works, not done). Be honest: an
+algorithm marked 'partly works' with a clear explanation is viewed more favourably than
+one claimed to work that fails in the viva.
+Task B — Master comparison table with evidence
+Build one table covering all 37 algorithms. For every algorithm list all the advantages and
+all the disadvantages you can find, not just one of each, and give at least four of each.
+Columns: algorithm; what it does (your words, with the main steps); advantages;
+disadvantages; the situation where it is the best choice; the situation where you should
+avoid it.
+To find them systematically, examine each algorithm on these aspects: speed and cost per
+generation or per solve; how well it converges to the true front; spread and diversity of
+the points; ability to reach non-convex or disconnected fronts; handling of constraints;
+behaviour as the number of objectives grows; number and sensitivity of parameters; extra
+information it needs (weights, targets, reference points, gradients, a decision-maker);
+variable type it supports (continuous, discrete, binary); memory use; and ease of
+implementation.
+Evidence rule: for at least two advantages and two disadvantages of every algorithm, cite
+a figure or number from your own runs in Task A (for example, 'collapsed to the end points,
+Fig. 3'). Justify the rest with a short argument based on the algorithm's steps. A claim with
+neither evidence nor argument is not accepted, and the lists are assessed for
+completeness and correctness. Group the rows by family and finish with a half-page
+paragraph on how the families differ in how they handle diversity, convergence,
+constraints and non-convex fronts.Lab Assignment 7 — Multiobjective Optimization: 37 Algorithms, T rade- oﬀs and Applications
+Page 14 of 17
+
+=== PAGE 15 ===
+Task C — Deep dive on your three assigned algorithms
+Your roll number R is the last two digits of your registration number (00 to 99). Use it to
+find your three algorithms. Take each remainder as a number from 0 to 36, so for R = 0 the
+value of (R − 1) mod 37 is 36:
+Algorithm 1 = ((R − 1) mod 37) + 1
+Algorithm 2 = ((R + 11) mod 37) + 1
+Algorithm 3 = ((R + 23) mod 37) + 1
+Examples: a registration number ending in 07 gives R = 7 and algorithms 7, 19, 31. Ending in
+00 gives algorithms 37, 12, 24. Ending in 99 gives algorithms 25, 37, 12.
+For each of the three, add the following on top of Task A.
+1. Study card. Full form, year, authors and the problem it was invented to fix; the core
+idea in at most five lines with a flow diagram; numbered steps with the formulas; every
+parameter with the effect of making it too small or too large; how it handles
+convergence, diversity, constraints, non-convex fronts and more than three objectives;
+time complexity per generation or per solve.
+2. Hand trace. Two full iterations by hand on a tiny instance (population of 4, or two
+weight or ε  settings for a classical method), showing every number. Your code must
+reproduce these numbers.
+3. Sensitivity study. Change its most important parameter to three values, run each with
+10 seeds, and explain the effect with plots.
+Task D — Head-to-head comparison
+Use your own implementations with equal evaluation budgets and 10 seeds each, and
+report mean ± standard deviation of HV and Spacing (and IGD where the true front is
+known). Plot the fronts together.
+1. Continuous bi-objective: run every algorithm from your set that applies to P3
+(unconstrained) and to P5 (constrained). Give a ranked table and explain the ranking.
+2. Many-objective: on P10 with M = 5, compare NSGA-II, NSGA-III, MOEA/D, RVEA and
+HypE. Explain what degrades in NSGA-II.
+3. Discrete: on P8, compare MOEA/D-ACO, MOACO, NSGA-II and MOMA, each with
+permutation operators.
+Methods that do not produce a front on their own are handled as follows:
+Algorithms 1–4: sweep at least 10 weights, ε  values or p/weight settings to build a front.Lab Assignment 7 — Multiobjective Optimization: 37 Algorithms, T rade- oﬀs and Applications
+Page 15 of 17
+
+=== PAGE 16 ===
+Algorithms 5–7: report the solution(s) found and the preference or priority input that
+produced them.
+Algorithms 8–9 (TOPSIS, VIKOR): apply them to your NSGA-II front and report the top
+three solutions under each, then change one weight by 0.1 and report whether the
+ranking flips.
+Algorithms 36–37 (MGDA, GradNorm): compare both task losses against fixed equal
+weights on P13.
+Task E — Algorithm selection reasoning
+Choose any six problems from P1–P14. For each, name the two most suitable algorithms
+from the 37 and one that is a poor choice, and justify using convexity, number of
+objectives, variable type, constraints, preference information and computational budget.
+At least one answer must involve a many-objective problem and one a constrained
+problem. Back at least three of your choices with results from Task A or D.
+Task F — Viva and code walkthrough
+You will be asked to open any of your modules, explain it line by line, change one line, and
+predict the effect before you run it. Expect questions such as:
+1. Why can Weighted Sum never reach a dented part of a non-convex front?
+2. Why did VEGA collapse towards the extremes in your run?
+3. What does elitism guarantee, and which of your algorithms have it?
+4. Why does crowding distance stop working well with many objectives, and what
+replaces it?
+5. Which of your algorithms needs a preference from the decision-maker, and what
+happens if it is wrong?
+6. Explain Deb's three constraint rules with one numerical example.
+7. How would you detect that your algorithm has prematurely converged?
+8. Why do TOPSIS and VIKOR not count as optimizers?
+6. Evaluation Metrics (quick reference)
+Hypervolume (HV): the volume of objective space dominated by your front and
+bounded by a reference point. Larger is better. Use the same normalization and
+reference point for all algorithms.Lab Assignment 7 — Multiobjective Optimization: 37 Algorithms, T rade- oﬀs and Applications
+Page 16 of 17
+
+=== PAGE 17 ===
+IGD: average distance from points sampled on the true front to the nearest obtained
+point. Smaller is better; measures convergence and spread together.
+Spacing: standard deviation of nearest-neighbour distances along the obtained front.
+Smaller means more evenly spread.
+Always normalize objectives to a common scale first.
+7. Submission
+Submit: (1) a PDF report with all tasks and figures; (2) a zip of your own runnable code (no
+optimization libraries) with a README (and build instructions or a Makefile for C++), your
+moo_utils file(s) and the random seeds used; (3) the raw result files behind every table
+and plot.
+Academic integrity: AI tools may be used to help debug code. The explanations, tables and
+conclusions must be your own and supported by your own experiments, and you will be
+questioned on them in the viva. Identical write-ups between students will be treated as
+copying.Lab Assignment 7 — Multiobjective Optimization: 37 Algorithms, T rade- oﬀs and Applications
+Page 17 of 17
+

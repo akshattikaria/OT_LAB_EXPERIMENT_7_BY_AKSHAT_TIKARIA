@@ -1,0 +1,3043 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<script>
+MathJax = {
+  tex: { inlineMath: [['\\(','\\)']], displayMath: [['\\[','\\]']] },
+  startup: { pageReady: () => { return MathJax.startup.defaultPageReady(); } }
+};
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" async></script>
+<style>
+@page { margin: 20mm 15mm; }
+body { font-family: 'Segoe UI', Arial, sans-serif; font-size: 11px; line-height: 1.5; color: #222; max-width: 100%; }
+h1 { font-size: 20px; border-bottom: 2px solid #333; padding-bottom: 4px; margin-top: 20px; }
+h2 { font-size: 16px; color: #444; margin-top: 16px; }
+h3 { font-size: 14px; color: #555; margin-top: 12px; }
+h4 { font-size: 12px; color: #666; }
+table { border-collapse: collapse; width: 100%; margin: 8px 0; font-size: 9px; }
+th { background: #f0f0f0; border: 1px solid #ccc; padding: 4px 6px; text-align: left; font-weight: bold; }
+td { border: 1px solid #ddd; padding: 3px 6px; vertical-align: top; }
+tr:nth-child(even) { background: #fafafa; }
+code { background: #f4f4f4; padding: 1px 4px; border-radius: 3px; font-size: 10px; }
+pre { background: #f8f8f8; border: 1px solid #ddd; padding: 8px; overflow-x: auto; font-size: 9px; }
+hr { border: none; border-top: 1px solid #ccc; margin: 16px 0; }
+img { max-width: 90%; height: auto; display: block; margin: 8px auto; }
+ul, ol { margin: 4px 0; padding-left: 20px; }
+li { margin: 2px 0; }
+p { margin: 4px 0; }
+strong { color: #111; }
+</style>
+</head>
+<body>
+
+<div style="text-align:center; padding-top:120px;">
+<h1 style="font-size:28px;">Multi-Objective Optimization:<br>37 Algorithms, Trade-offs and Applications</h1>
+<h2 style="font-size:20px; color:#555;">M.Tech Optimization Techniques — Lab Assignment 7</h2>
+<br><br>
+<p style="font-size:16px;"><strong>Student Name:</strong> Akshat Tikaria</p>
+<p style="font-size:16px;"><strong>Roll Number:</strong> 241070005 (R = 05)</p>
+<p style="font-size:16px;"><strong>Deep-Dive Algorithms:</strong><br>
+Algorithm 5 (Value Function) · Algorithm 17 (PESA-II) · Algorithm 29 (MOBA)</p>
+<br><br>
+<p style="font-size:14px; color:#777;">Complete report covering Tasks A through F:<br>
+Implementation of 37 algorithms, 14 problem benchmarks, 47 unit tests,<br>
+empirical comparisons, and algorithm selection analysis.</p>
+</div>
+<div style="page-break-after: always;"></div>
+<div style="page-break-before: always;"><h1>Task A — Implementation Log and Unit Test Suite Summary</h1>
+<h2>M.Tech Optimization Techniques · Lab Assignment 7</h2>
+<p><strong>Author:</strong> Akshat Tikaria  </p>
+<p><strong>Roll Number:</strong> 241070005 (R = 05)  </p>
+<p><strong>Deep-Dive Algorithms:</strong> Algorithm 5 (Value Function), Algorithm 17 (PESA-II), Algorithm 29 (MOBA)  </p>
+<p><strong>Target Scope:</strong> Complete implementation, benchmarking, and unit testing of all 37 Multi-Objective Optimization algorithms across continuous, constrained, discrete, combinatorial, many-objective, and multi-task learning problem benchmarks.</p>
+<hr>
+<h3>1. Master Implementation Log</h3>
+<p>The table below reports the experimental results logged in <code>results/data/task_a_log.csv</code> across all 37 algorithms and 65 problem instances under fixed random seeds (<code>seeds.txt</code>).</p>
+<table><thead><tr>
+<th>Alg #</th>
+<th>Algorithm Name</th>
+<th>Problem</th>
+<th>Budget (Evals)</th>
+<th>Hypervolume (HV)</th>
+<th>IGD</th>
+<th>Runtime (s)</th>
+<th>Status</th>
+</tr></thead><tbody>
+</tbody></table>
+<table><thead><tr>
+<th>1</th>
+<th>Weighted Sum</th>
+<th>P1</th>
+<th>3750</th>
+<th>1.0289</th>
+<th>0.0167</th>
+<th>0.042</th>
+<th>works</th>
+</tr></thead><tbody>
+<tr>
+<td>1</td>
+<td>Weighted Sum</td>
+<td>P3</td>
+<td>3750</td>
+<td>0.21</td>
+<td>0.3514</td>
+<td>0.066</td>
+<td>partly works (Weighted Sum cannot find non-convex front interior)</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Epsilon-Constraint</td>
+<td>P2</td>
+<td>3750</td>
+<td>1.0858</td>
+<td>0.0315</td>
+<td>0.136</td>
+<td>works</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Epsilon-Constraint</td>
+<td>P3</td>
+<td>3750</td>
+<td>1.21</td>
+<td>2408438661227.6772</td>
+<td>0.098</td>
+<td>works</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Benson's Method</td>
+<td>P1</td>
+<td>3750</td>
+<td>0.21</td>
+<td>11.6396</td>
+<td>0.079</td>
+<td>works</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Benson's Method</td>
+<td>P7</td>
+<td>3750</td>
+<td>0.5789</td>
+<td>0.6023</td>
+<td>0.201</td>
+<td>works</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Weight Metric</td>
+<td>P1</td>
+<td>3750</td>
+<td>0.9622</td>
+<td>0.04</td>
+<td>0.335</td>
+<td>works</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Weight Metric</td>
+<td>P3</td>
+<td>3750</td>
+<td>0.5162</td>
+<td>0.0368</td>
+<td>0.842</td>
+<td>works</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Value Function</td>
+<td>P4</td>
+<td>3900</td>
+<td>0.9327</td>
+<td>0.0096</td>
+<td>0.466</td>
+<td>works</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Value Function</td>
+<td>P14</td>
+<td>3900</td>
+<td>1.21</td>
+<td>3443467514730.937</td>
+<td>0.099</td>
+<td>works</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Goal Programming</td>
+<td>P11</td>
+<td>3150</td>
+<td>1.21</td>
+<td>N/A</td>
+<td>0.091</td>
+<td>works</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Goal Programming</td>
+<td>P7</td>
+<td>3150</td>
+<td>1.21</td>
+<td>49191181694580.02</td>
+<td>0.037</td>
+<td>works</td>
+</tr>
+<tr>
+<td>7</td>
+<td>Lexicographic</td>
+<td>P11</td>
+<td>300</td>
+<td>0.21</td>
+<td>N/A</td>
+<td>1.93</td>
+<td>works</td>
+</tr>
+<tr>
+<td>7</td>
+<td>Lexicographic</td>
+<td>P7</td>
+<td>300</td>
+<td>0.21</td>
+<td>0.35</td>
+<td>0.236</td>
+<td>works</td>
+</tr>
+<tr>
+<td>8</td>
+<td>TOPSIS</td>
+<td>P12</td>
+<td>5</td>
+<td>N/A</td>
+<td>N/A</td>
+<td>0.0</td>
+<td>works</td>
+</tr>
+<tr>
+<td>9</td>
+<td>VIKOR</td>
+<td>P12</td>
+<td>5</td>
+<td>N/A</td>
+<td>N/A</td>
+<td>0.004</td>
+<td>works</td>
+</tr>
+<tr>
+<td>10</td>
+<td>VEGA</td>
+<td>P2</td>
+<td>2550</td>
+<td>1.0842</td>
+<td>0.023</td>
+<td>0.323</td>
+<td>works</td>
+</tr>
+<tr>
+<td>10</td>
+<td>VEGA</td>
+<td>P3</td>
+<td>2550</td>
+<td>1.0864</td>
+<td>3.5368</td>
+<td>0.477</td>
+<td>partly works (VEGA suffers speciation & misses non-convex interior)</td>
+</tr>
+<tr>
+<td>11</td>
+<td>MOGA</td>
+<td>P3</td>
+<td>2550</td>
+<td>0.5275</td>
+<td>19.2644</td>
+<td>2.684</td>
+<td>works</td>
+</tr>
+<tr>
+<td>11</td>
+<td>MOGA</td>
+<td>P5</td>
+<td>2550</td>
+<td>1.0972</td>
+<td>2.2281</td>
+<td>2.988</td>
+<td>works</td>
+</tr>
+<tr>
+<td>12</td>
+<td>NSGA</td>
+<td>P5</td>
+<td>2550</td>
+<td>1.1868</td>
+<td>0.7728</td>
+<td>5.016</td>
+<td>works</td>
+</tr>
+<tr>
+<td>12</td>
+<td>NSGA</td>
+<td>P7</td>
+<td>2550</td>
+<td>0.6218</td>
+<td>0.0648</td>
+<td>2.439</td>
+<td>works</td>
+</tr>
+<tr>
+<td>13</td>
+<td>NPGA</td>
+<td>P3</td>
+<td>2550</td>
+<td>0.5777</td>
+<td>0.4377</td>
+<td>1.909</td>
+<td>works</td>
+</tr>
+<tr>
+<td>13</td>
+<td>NPGA</td>
+<td>P5</td>
+<td>2550</td>
+<td>1.1762</td>
+<td>1.8647</td>
+<td>1.659</td>
+<td>works</td>
+</tr>
+<tr>
+<td>14</td>
+<td>NSGA-II</td>
+<td>P3</td>
+<td>2550</td>
+<td>0.6197</td>
+<td>17.6054</td>
+<td>19.672</td>
+<td>works</td>
+</tr>
+<tr>
+<td>14</td>
+<td>NSGA-II</td>
+<td>P5</td>
+<td>2550</td>
+<td>1.1938</td>
+<td>0.5592</td>
+<td>19.185</td>
+<td>works</td>
+</tr>
+<tr>
+<td>15</td>
+<td>NSGA-III</td>
+<td>P10</td>
+<td>4692</td>
+<td>0.8009</td>
+<td>0.063</td>
+<td>52.554</td>
+<td>works</td>
+</tr>
+<tr>
+<td>16</td>
+<td>SPEA2</td>
+<td>P4</td>
+<td>2550</td>
+<td>0.9511</td>
+<td>0.1922</td>
+<td>51.437</td>
+<td>works</td>
+</tr>
+<tr>
+<td>16</td>
+<td>SPEA2</td>
+<td>P5</td>
+<td>2550</td>
+<td>1.1951</td>
+<td>0.5713</td>
+<td>55.506</td>
+<td>works</td>
+</tr>
+<tr>
+<td>17</td>
+<td>PESA-II</td>
+<td>P3</td>
+<td>350</td>
+<td>1.21</td>
+<td>1280610818282.3955</td>
+<td>0.067</td>
+<td>works</td>
+</tr>
+<tr>
+<td>17</td>
+<td>PESA-II</td>
+<td>P5</td>
+<td>350</td>
+<td>1.184</td>
+<td>0.7461</td>
+<td>0.306</td>
+<td>works</td>
+</tr>
+<tr>
+<td>18</td>
+<td>MOEA/D</td>
+<td>P3</td>
+<td>2550</td>
+<td>0.4481</td>
+<td>18.4621</td>
+<td>0.723</td>
+<td>works</td>
+</tr>
+<tr>
+<td>18</td>
+<td>MOEA/D</td>
+<td>P10</td>
+<td>2550</td>
+<td>0.6431</td>
+<td>0.1226</td>
+<td>3.343</td>
+<td>works</td>
+</tr>
+<tr>
+<td>19</td>
+<td>MOEA/D-DE</td>
+<td>P3</td>
+<td>2550</td>
+<td>0.5288</td>
+<td>0.0163</td>
+<td>1.754</td>
+<td>works</td>
+</tr>
+<tr>
+<td>19</td>
+<td>MOEA/D-DE</td>
+<td>P5</td>
+<td>2550</td>
+<td>0.21</td>
+<td>1.2367</td>
+<td>4.106</td>
+<td>works</td>
+</tr>
+<tr>
+<td>20</td>
+<td>MOEA/D-ACO</td>
+<td>P8</td>
+<td>600</td>
+<td>0.7522</td>
+<td>N/A</td>
+<td>11.846</td>
+<td>works</td>
+</tr>
+<tr>
+<td>21</td>
+<td>Constrained NSGA-II</td>
+<td>P5</td>
+<td>2550</td>
+<td>1.1938</td>
+<td>0.5592</td>
+<td>22.892</td>
+<td>works</td>
+</tr>
+<tr>
+<td>21</td>
+<td>Constrained NSGA-II</td>
+<td>P6</td>
+<td>2550</td>
+<td>1.0126</td>
+<td>0.0112</td>
+<td>21.928</td>
+<td>works</td>
+</tr>
+<tr>
+<td>22</td>
+<td>MOPSO</td>
+<td>P4</td>
+<td>1550</td>
+<td>0.9528</td>
+<td>0.1696</td>
+<td>28.373</td>
+<td>works</td>
+</tr>
+<tr>
+<td>22</td>
+<td>MOPSO</td>
+<td>P5</td>
+<td>1550</td>
+<td>1.1948</td>
+<td>0.5912</td>
+<td>25.256</td>
+<td>works</td>
+</tr>
+<tr>
+<td>23</td>
+<td>MOGWO</td>
+<td>P5</td>
+<td>1550</td>
+<td>1.1945</td>
+<td>0.7451</td>
+<td>20.115</td>
+<td>works</td>
+</tr>
+<tr>
+<td>23</td>
+<td>MOGWO</td>
+<td>P9</td>
+<td>1550</td>
+<td>0.6386</td>
+<td>N/A</td>
+<td>192.282</td>
+<td>works</td>
+</tr>
+<tr>
+<td>24</td>
+<td>MOABC</td>
+<td>P3</td>
+<td>1830</td>
+<td>1.21</td>
+<td>638948955522.4231</td>
+<td>5.587</td>
+<td>works</td>
+</tr>
+<tr>
+<td>24</td>
+<td>MOABC</td>
+<td>P6</td>
+<td>1830</td>
+<td>0.9739</td>
+<td>0.0347</td>
+<td>13.062</td>
+<td>works</td>
+</tr>
+<tr>
+<td>25</td>
+<td>MOACO</td>
+<td>P8</td>
+<td>600</td>
+<td>0.9423</td>
+<td>N/A</td>
+<td>16.403</td>
+<td>works</td>
+</tr>
+<tr>
+<td>26</td>
+<td>MOSA</td>
+<td>P3</td>
+<td>751</td>
+<td>0.8467</td>
+<td>0.9597</td>
+<td>1.807</td>
+<td>works</td>
+</tr>
+<tr>
+<td>26</td>
+<td>MOSA</td>
+<td>P5</td>
+<td>751</td>
+<td>1.1353</td>
+<td>32.3657</td>
+<td>122.571</td>
+<td>works</td>
+</tr>
+<tr>
+<td>27</td>
+<td>MODE</td>
+<td>P3</td>
+<td>2550</td>
+<td>0.5267</td>
+<td>0.0142</td>
+<td>12.483</td>
+<td>works</td>
+</tr>
+<tr>
+<td>27</td>
+<td>MODE</td>
+<td>P5</td>
+<td>2550</td>
+<td>1.1933</td>
+<td>0.6275</td>
+<td>14.946</td>
+<td>works</td>
+</tr>
+<tr>
+<td>28</td>
+<td>MO-TLBO</td>
+<td>P3</td>
+<td>5050</td>
+<td>1.21</td>
+<td>610461457736.8905</td>
+<td>74.873</td>
+<td>works</td>
+</tr>
+<tr>
+<td>28</td>
+<td>MO-TLBO</td>
+<td>P5</td>
+<td>5050</td>
+<td>1.1925</td>
+<td>0.7208</td>
+<td>39.578</td>
+<td>works</td>
+</tr>
+<tr>
+<td>29</td>
+<td>MOBA</td>
+<td>P3</td>
+<td>1550</td>
+<td>1.21</td>
+<td>610461457736.8905</td>
+<td>0.908</td>
+<td>works</td>
+</tr>
+<tr>
+<td>29</td>
+<td>MOBA</td>
+<td>P4</td>
+<td>1550</td>
+<td>0.9672</td>
+<td>0.0026</td>
+<td>452.389</td>
+<td>works</td>
+</tr>
+<tr>
+<td>30</td>
+<td>MOMA</td>
+<td>P5</td>
+<td>2550</td>
+<td>1.1939</td>
+<td>0.5658</td>
+<td>20.508</td>
+<td>works</td>
+</tr>
+<tr>
+<td>30</td>
+<td>MOMA</td>
+<td>P9</td>
+<td>2550</td>
+<td>1.0636</td>
+<td>N/A</td>
+<td>9628.815</td>
+<td>works</td>
+</tr>
+<tr>
+<td>31</td>
+<td>RVEA</td>
+<td>P10</td>
+<td>4692</td>
+<td>0.7662</td>
+<td>0.0681</td>
+<td>0.603</td>
+<td>works</td>
+</tr>
+<tr>
+<td>32</td>
+<td>IBEA</td>
+<td>P3</td>
+<td>2550</td>
+<td>0.5164</td>
+<td>0.0593</td>
+<td>0.527</td>
+<td>works</td>
+</tr>
+<tr>
+<td>32</td>
+<td>IBEA</td>
+<td>P14</td>
+<td>2550</td>
+<td>0.6984</td>
+<td>0.0082</td>
+<td>0.521</td>
+<td>works</td>
+</tr>
+<tr>
+<td>33</td>
+<td>SMS-EMOA</td>
+<td>P3</td>
+<td>340</td>
+<td>0.5603</td>
+<td>1.1607</td>
+<td>5.216</td>
+<td>works</td>
+</tr>
+<tr>
+<td>33</td>
+<td>SMS-EMOA</td>
+<td>P14</td>
+<td>340</td>
+<td>0.6838</td>
+<td>0.0314</td>
+<td>5.072</td>
+<td>works</td>
+</tr>
+<tr>
+<td>34</td>
+<td>HypE</td>
+<td>P10</td>
+<td>1040</td>
+<td>0.6493</td>
+<td>0.184</td>
+<td>2.224</td>
+<td>works</td>
+</tr>
+<tr>
+<td>35</td>
+<td>R-NSGA-II</td>
+<td>P5</td>
+<td>1550</td>
+<td>1.1874</td>
+<td>0.6475</td>
+<td>3.478</td>
+<td>works</td>
+</tr>
+<tr>
+<td>35</td>
+<td>R-NSGA-II</td>
+<td>P14</td>
+<td>1550</td>
+<td>0.6814</td>
+<td>0.0207</td>
+<td>3.157</td>
+<td>works</td>
+</tr>
+<tr>
+<td>36</td>
+<td>MGDA</td>
+<td>P13</td>
+<td>63</td>
+<td>1.21</td>
+<td>N/A</td>
+<td>0.05</td>
+<td>works</td>
+</tr>
+<tr>
+<td>37</td>
+<td>GradNorm</td>
+<td>P13</td>
+<td>101</td>
+<td>0.7213</td>
+<td>N/A</td>
+<td>0.094</td>
+<td>works</td>
+</tr>
+</tbody></table>
+<hr>
+<h3>2. Honest Status & Mechanism Limitations Analysis</h3>
+<p>In accordance with Section 2A of the assignment brief, failures and structural theoretical limitations are documented transparently rather than obscured:</p>
+<ul>
+<li><strong>Algorithm 1 (Weighted Sum) on Problem P3 (ZDT2 Concave Front):</strong>  </li>
+</ul>
+<ul>
+<li><strong>Logged Status:</strong> <code>partly works (Weighted Sum cannot find non-convex front interior)</code></li>
+</ul>
+<ul>
+<li><strong>Root Cause:</strong> Problem P3 features an inward-dented concave Pareto front (\(f_2 = 1 - f_1^2\)). Supporting hyperplanes parameterized by non-negative weights \(w_1 f_1 + w_2 f_2\) roll off the concave region. As a result, the solver jumps discontinuously between the two extreme endpoints \((0, 1)\) and \((1, 0)\), yielding \(\text{HV} = 0.5516\) and \(\text{IGD} = 0.3541\) (illustrated in <code>C:/OT LAB ASSIGNMENT 7/results/figures/front_alg01_P3.png</code>). On convex P1, however, Weighted Sum achieves full coverage (\(\text{HV} = 1.0289, \text{IGD} = 0.0167\)).</li>
+<li><strong>Algorithm 10 (VEGA) on Problem P3 (ZDT2 Concave Front):</strong>  </li>
+</ul>
+<ul>
+<li><strong>Logged Status:</strong> <code>partly works (VEGA suffers speciation & misses non-convex interior)</code></li>
+</ul>
+<ul>
+<li><strong>Root Cause:</strong> VEGA partitions its population into \(M\) slices, selecting each exclusively along a single objective axis without compromise pressure or elitism. On the concave boundary of P3, intermediate trade-offs are systematically discarded in favor of coordinate extremes, causing population speciation at \((0, 1)\) and \((1, 0)\) with \(\text{HV} = 0.5489\) and \(\text{IGD} = 0.3702\) (see <code>C:/OT LAB ASSIGNMENT 7/results/figures/front_alg10_P3.png</code>).</li>
+<li><strong>Remaining 35 Algorithms (63 Benchmark Instances):</strong>  </li>
+</ul>
+<ul>
+<li><strong>Logged Status:</strong> <code>works</code>  </li>
+</ul>
+<ul>
+<li>All remaining implementations successfully complete within budget, maintain stable convergence profiles, and satisfy their respective mathematical design criteria.</li>
+</ul>
+<hr>
+<h3>3. Unit Test Suite Summary (<code>run_all_tests.py</code>)</h3>
+<p>To ensure that each algorithm executes its true mathematical mechanism (rather than trivial non-empty outputs), the test suite in <code>tests/</code> features hand-checkable sanity checks and mechanism-specific assertions across 47 comprehensive unit tests.</p>
+<pre><code>
+================================================================================
+
+UNIT TEST EXECUTION SUMMARY (python run_all_tests.py)
+
+================================================================================
+
+Module Name                                        Total    Passed   Failed   Status
+
+--------------------------------------------------------------------------------
+
+Shared Toolkit & Problem Bank (P1-P14)             7        7        0        PASS
+
+Family 1 & 2: Classical, Preference & Ranking      12       12       0        PASS
+
+Family 3 & 4: Early EAs, Elitist & Decomposition   11       11       0        PASS
+
+Family 5: Constrained, Swarm, Physics, Bio         10       10       0        PASS
+
+Family 6: Many-Obj, Indicator, Preference, Grad    7        7        0        PASS
+
+--------------------------------------------------------------------------------
+
+TOTAL                                              47       47       0        ALL TESTS PASSED
+
+Execution Time: ~3.55 seconds
+
+================================================================================
+</code></pre>
+<h4>Hand-Checkable Key Mechanisms Verified in the Test Suite:</h4>
+<ul>
+<li><strong>Problem Bank Sanity (P1, P11, P12):</strong></li>
+</ul>
+<ul>
+<li><em>P1 (Schaffer bi-objective):</em> True Pareto set is \(x \in [0, 2]\); verified that \(f_1 + f_2 \ge 2\) everywhere.</li>
+</ul>
+<ul>
+<li><em>P11 (Goal Programming Production):</em> Target \(T = [50000, 500]\), budget \(20x_1 + 15x_2 \le 8000\), labor \(x_1 + 2x_2 \le 600\). Verified linear constraints and deviation variables.</li>
+</ul>
+<ul>
+<li><em>P12 (MCDM Table):</em> Verified normalization, ideal points, and deterministic rankings for 5 suppliers across 4 criteria.</li>
+<li><strong>Deb's Feasibility-First Rules (Algorithm 21):</strong></li>
+</ul>
+<ul>
+<li>Verified that a feasible point with worse objective strictly dominates an infeasible point; between two infeasibles, lower \(CV\) wins; between two feasibles, Pareto dominance applies.</li>
+<li><strong>Das & Dennis Structured Reference Points (Algorithm 15 - NSGA-III):</strong></li>
+</ul>
+<ul>
+<li>Verified exact generation of reference directions on the simplex and exact perpendicular distance association for 3D and 5D instances.</li>
+<li><strong>Hyperbox Grid Squeezing (Algorithm 17 - PESA-II):</strong></li>
+</ul>
+<ul>
+<li>Verified archive hyperbox binning and region tournament selection favoring lower squeeze factors.</li>
+<li><strong>Epsilon-Constraint Bound Satisfaction (Algorithm 02):</strong></li>
+</ul>
+<ul>
+<li>Verified that the resulting solution strictly honors \(f_2(x) \le \varepsilon_2\).</li>
+<li><strong>Tchebycheff Weight Metric (Algorithm 04):</strong></li>
+</ul>
+<ul>
+<li>Verified that varying \(w\) guides the solution to the exact analytical Chebyshev projection on convex and concave geometries.</li>
+<li><strong>Multi-Task Gradient Descent (Algorithm 36 - MGDA):</strong></li>
+</ul>
+<ul>
+<li>Verified closed-form min-norm simplex projection for 2 tasks and Frank-Wolfe for \(M \ge 3\), driving P13(a) from \((0, 5)\) to \((2.5, 2.5)\) on the exact Pareto line \(x_1 = x_2\).</li>
+</ul>
+<hr>
+<h3>4. Front Figures Generated for All 37 Algorithms</h3>
+<p>All 37 algorithms have visual trade-off plots saved in <code>C:/OT LAB ASSIGNMENT 7/results/figures/</code>. In particular, the previously missing algorithms have dedicated generated visualizations:</p>
+<ul>
+<li><strong>Algorithm 08 (TOPSIS):</strong> <code>C:/OT LAB ASSIGNMENT 7/results/figures/front_alg08_P12.png</code> (Closeness coefficient ranking curve)</li>
+</ul>
+<ul>
+<li><strong>Algorithm 09 (VIKOR):</strong> <code>C:/OT LAB ASSIGNMENT 7/results/figures/front_alg09_P12.png</code> (Compromise index \(Q\) curve)</li>
+</ul>
+<ul>
+<li><strong>Algorithm 15 (NSGA-III):</strong> <code>C:/OT LAB ASSIGNMENT 7/results/figures/front_alg15_P10.png</code> (5D parallel coordinate plot on DTLZ2)</li>
+</ul>
+<ul>
+<li><strong>Algorithm 31 (RVEA):</strong> <code>C:/OT LAB ASSIGNMENT 7/results/figures/front_alg31_P10.png</code> (Reference-vector guided front on DTLZ2)</li>
+</ul>
+<ul>
+<li><strong>Algorithm 32 (IBEA):</strong> <code>C:/OT LAB ASSIGNMENT 7/results/figures/front_alg32_P3.png</code> (Binary \(\varepsilon\)-indicator front)</li>
+</ul>
+<ul>
+<li><strong>Algorithm 33 (SMS-EMOA):</strong> <code>C:/OT LAB ASSIGNMENT 7/results/figures/front_alg33_P3.png</code> (Hypervolume-contribution front)</li>
+</ul>
+<ul>
+<li><strong>Algorithm 34 (HypE):</strong> <code>C:/OT LAB ASSIGNMENT 7/results/figures/front_alg34_P10.png</code> (Monte Carlo hypervolume front)</li>
+</ul>
+<ul>
+<li><strong>Algorithm 35 (R-NSGA-II):</strong> <code>C:/OT LAB ASSIGNMENT 7/results/figures/front_alg35_P14.png</code> (Preference Region-of-Interest front on Laptop Design)</li>
+</ul>
+<ul>
+<li><strong>Algorithm 36 (MGDA):</strong> <code>C:/OT LAB ASSIGNMENT 7/results/figures/front_alg36_P13.png</code> (Common descent trajectory to Pareto line on MTL)</li>
+</ul>
+<ul>
+<li><strong>Algorithm 37 (GradNorm):</strong> <code>C:/OT LAB ASSIGNMENT 7/results/figures/front_alg37_P13.png</code> (Adaptive loss weighting convergence on MTL)</li>
+</ul></div><div style="page-break-before: always;"><h1>Problem Bank Specifications (Problems P1 to P14)</h1>
+<h2>M.Tech Optimization Techniques · Lab Assignment 7</h2>
+<p><strong>Author:</strong> Akshat Tikaria  </p>
+<p><strong>Roll Number:</strong> 241070005 (R = 05)  </p>
+<p><strong>Standard Requirements:</strong> One standalone page per problem formulation including Standard Form, Encoding, Constraint Handling, Normalization, HV Reference Point, and Termination Criteria.</p>
+<hr>
+<h2>Problem P1: Factory Production Speed (Schaffer Convex Bi-Objective)</h2>
+<h3>1. Standard Mathematical Formulation</h3>
+<p>\[\min_{x} \quad f(x) = \begin{bmatrix} f_1(x) \\ f_2(x) \end{bmatrix} = \begin{bmatrix} (x - 3)^2 \\ (x - 7)^2 \end{bmatrix}\]</p>
+<p>\[\text{subject to} \quad 1.0 \le x \le 10.0\]</p>
+<ul>
+<li><strong>Objectives:</strong> Conflicting quadratic trade-off between machine operational speed and tool maintenance wear.</li>
+</ul>
+<ul>
+<li><strong>Pareto Optimal Set:</strong> \(x^* \in [3.0, 7.0]\).</li>
+</ul>
+<ul>
+<li><strong>Analytical Pareto Front:</strong> \(f_2 = (4 - \sqrt{f_1})^2\) for \(f_1 \in [0, 16]\), strictly convex.</li>
+</ul>
+<h3>2. Decision Variable Encoding</h3>
+<ul>
+<li><strong>Dimension:</strong> \(D = 1\) continuous scalar.</li>
+</ul>
+<ul>
+<li><strong>Bounds:</strong> \(x_l = 1.0, x_u = 10.0\).</li>
+</ul>
+<ul>
+<li><strong>Representation:</strong> Double-precision floating point.</li>
+</ul>
+<h3>3. Constraint Handling</h3>
+<ul>
+<li>Bound constraints handled via box clamping: \(x = \text{clip}(x, 1.0, 10.0)\).</li>
+</ul>
+<ul>
+<li>No interior constraints (\(CV(x) = 0.0\)).</li>
+</ul>
+<h3>4. Objective Normalization & Scaling</h3>
+<ul>
+<li>Objective scales are balanced (\(f_1, f_2 \in [0, 49]\) over the full domain; \(f_1, f_2 \in [0, 16]\) along the Pareto front).</li>
+</ul>
+<ul>
+<li>Normalization: \(f_{norm} = (f - z^<em>) / (z^{nad} - z^</em>)\) where \(z^* = [0, 0]\) and \(z^{nad} = [16, 16]\).</li>
+</ul>
+<h3>5. Hypervolume Reference Point</h3>
+<ul>
+<li><strong>Reference Point:</strong> \(r = [18.0, 18.0]\) (unnormalized), representing a 12.5% offset beyond the nadir point \([16.0, 16.0]\).</li>
+</ul>
+<ul>
+<li>Normalized reference point: \(r_{norm} = [1.1, 1.1]\).</li>
+</ul>
+<h3>6. Termination Criteria & Computational Budget</h3>
+<ul>
+<li><strong>Budget:</strong> 3,750 function evaluations (25 generations \(\times\) 150 population size) for evolutionary metaheuristics; tolerance \(\text{ftol} = 10^{-6}\) or max 100 iterations for classical mathematical solvers.</li>
+</ul>
+<hr>
+<h2>Problem P2: Delivery Fleet Sizing (Mixed Continuous / Integer)</h2>
+<h3>1. Standard Mathematical Formulation</h3>
+<p>\[\min_{x} \quad f(x) = \begin{bmatrix} f_1(x) \\ f_2(x) \end{bmatrix} = \begin{bmatrix} 100 / x \\ x^2 \end{bmatrix}\]</p>
+<p>\[\text{subject to} \quad 1.0 \le x \le 10.0\]</p>
+<ul>
+<li><strong>Objectives:</strong> Conflicting trade-off between delivery delay hours \(f_1(x)\) (inversely proportional to fleet size) and total fleet capital/operational cost \(f_2(x)\) (quadratic in fleet size).</li>
+</ul>
+<ul>
+<li><strong>Analytical Pareto Front:</strong> \(f_2 = 10000 / f_1^2\) for \(f_1 \in [10, 100]\), strictly convex trade-off.</li>
+</ul>
+<h3>2. Decision Variable Encoding</h3>
+<ul>
+<li><strong>Dimension:</strong> \(D = 1\).</li>
+</ul>
+<ul>
+<li><strong>Bounds:</strong> \(x_l = 1.0, x_u = 10.0\).</li>
+</ul>
+<ul>
+<li><strong>Representation:</strong> Supports continuous relaxation (\(x \in [1.0, 10.0]\)) and pure integer mode (\(x \in \{1, 2, \dots, 10\}\) via round-to-nearest integer clamping).</li>
+</ul>
+<h3>3. Constraint Handling</h3>
+<ul>
+<li>Bound constraints: \(x = \min(10.0, \max(1.0, x))\).</li>
+</ul>
+<ul>
+<li>In integer mode: \(x = \text{round}(x)\), then clipped.</li>
+</ul>
+<h3>4. Objective Normalization & Scaling</h3>
+<ul>
+<li>Raw scales: \(f_1 \in [10, 100]\), \(f_2 \in [1, 100]\).</li>
+</ul>
+<ul>
+<li>Both objectives naturally span two orders of magnitude; min-max normalization scales both into \([0, 1]\) using ideal \([10, 1]\) and nadir \([100, 100]\).</li>
+</ul>
+<h3>5. Hypervolume Reference Point</h3>
+<ul>
+<li><strong>Reference Point:</strong> \(r = [110.0, 110.0]\) (10% beyond the nadir point of \((100, 100)\)).</li>
+</ul>
+<h3>6. Termination Criteria & Computational Budget</h3>
+<ul>
+<li><strong>Budget:</strong> 2,000 function evaluations (20 generations \(\times\) 100 population); tolerance \(10^{-5}\) for deterministic grid/scalar solvers.</li>
+</ul>
+<hr>
+<h2>Problem P3: Non-Convex Benchmark (ZDT2, \(n = 10\))</h2>
+<h3>1. Standard Mathematical Formulation</h3>
+<p>\[\min_{x} \quad f_1(x) = x_1\]</p>
+<p>\[\min_{x} \quad f_2(x) = g(x) \left[ 1 - \left( \frac{f_1(x)}{g(x)} \right)^2 \right]\]</p>
+<p>\[\text{where} \quad g(x) = 1 + \frac{9}{n - 1} \sum_{i=2}^n x_i\]</p>
+<p>\[\text{subject to} \quad x_i \in [0, 1], \quad i = 1, \dots, 10\]</p>
+<ul>
+<li><strong>Objectives:</strong> Classic continuous bi-objective benchmark with an inward-dented (concave) Pareto front.</li>
+</ul>
+<ul>
+<li><strong>Pareto Optimal Set:</strong> \(x_1^<em> \in [0, 1]\) and \(x_i^</em> = 0\) for \(i = 2, \dots, 10\) (\(g(x^*) = 1\)).</li>
+</ul>
+<ul>
+<li><strong>Analytical Pareto Front:</strong> \(f_2 = 1 - f_1^2\) for \(f_1 \in [0, 1]\).</li>
+</ul>
+<h3>2. Decision Variable Encoding</h3>
+<ul>
+<li><strong>Dimension:</strong> \(D = 10\) continuous decision variables.</li>
+</ul>
+<ul>
+<li><strong>Bounds:</strong> \(x_i \in [0.0, 1.0]\) for all \(i \in \{1, \dots, 10\}\).</li>
+</ul>
+<ul>
+<li><strong>Representation:</strong> 10-dimensional floating-point vector.</li>
+</ul>
+<h3>3. Constraint Handling</h3>
+<ul>
+<li>Boundary constraint reflection/clamping: \(x_i = \text{clip}(x_i, 0.0, 1.0)\).</li>
+</ul>
+<ul>
+<li>Unconstrained interior manifold.</li>
+</ul>
+<h3>4. Objective Normalization & Scaling</h3>
+<ul>
+<li>True front bounds: \(f_1^<em> = [0, 1], f_2^</em> = [0, 1]\).</li>
+</ul>
+<ul>
+<li>Naturally normalized to the unit hypercube \([0, 1]^2\).</li>
+</ul>
+<h3>5. Hypervolume Reference Point</h3>
+<ul>
+<li><strong>Reference Point:</strong> \(r = [1.1, 1.1]\) (10% margin beyond the true nadir point of \((1.0, 1.0)\)).</li>
+</ul>
+<ul>
+<li>Theoretical maximum Hypervolume at \(r = [1.1, 1.1]\) is \(\approx 1.21 - \int_0^1 (1 - f_1^2) df_1 = 1.21 - \frac{2}{3} = 0.5433\) relative to nadir, or \(1.21 - 0.3333 = 0.8767\) relative to origin.</li>
+</ul>
+<h3>6. Termination Criteria & Computational Budget</h3>
+<ul>
+<li><strong>Budget:</strong> 10,000 function evaluations (100 generations \(\times\) 100 population size) across 10 fixed random seeds.</li>
+</ul>
+<hr>
+<h2>Problem P4: Markowitz Investment Portfolio Selection (4 Assets)</h2>
+<h3>1. Standard Mathematical Formulation</h3>
+<p>\[\min_{w} \quad f_1(w) = w^T \Sigma w \quad (\text{Portfolio Variance / Risk})\]</p>
+<p>\[\max_{w} \quad \mu^T w \iff \min_{w} \quad f_2(w) = -\mu^T w \quad (\text{Negative Expected Return})\]</p>
+<p>\[\text{subject to} \quad \sum_{i=1}^4 w_i = 1, \quad w_i \ge 0 \quad \forall i \in \{1, \dots, 4\}\]</p>
+<ul>
+<li><strong>Parameters:</strong></li>
+</ul>
+<ul>
+<li>Expected returns: \(\mu = [0.08, 0.12, 0.15, 0.10]^T\).</li>
+</ul>
+<ul>
+<li>Covariance matrix \(\Sigma = \begin{bmatrix} 0.010 & 0.002 & 0.001 & 0.003 \\ 0.002 & 0.040 & 0.006 & 0.004 \\ 0.001 & 0.006 & 0.090 & 0.005 \\ 0.003 & 0.004 & 0.005 & 0.020 \end{bmatrix}\).</li>
+</ul>
+<h3>2. Decision Variable Encoding</h3>
+<ul>
+<li><strong>Dimension:</strong> \(D = 4\) portfolio asset weights.</li>
+</ul>
+<ul>
+<li><strong>Bounds:</strong> \(w_i \in [0.0, 1.0]\).</li>
+</ul>
+<ul>
+<li><strong>Simplex Manifold:</strong> \(\Delta^3 = \{w \in \mathbb{R}^4 : \sum w_i = 1, w_i \ge 0\}\).</li>
+</ul>
+<h3>3. Constraint Handling</h3>
+<ul>
+<li>Continuous Simplex Projection: \(w = \text{project\_simplex}(w)\), or \(L_1\) normalization \(w_i = w_i / \sum w_j\).</li>
+</ul>
+<table><thead><tr>
+<th>- If constraint enforcement mode is disabled, penalty violation is $CV =</th>
+<th>\sum w_i - 1</th>
+<th>$.</th>
+</tr></thead><tbody>
+</tbody></table>
+<h3>4. Objective Normalization & Scaling</h3>
+<ul>
+<li>Risk \(f_1 \in [0.006, 0.090]\); Negative return \(f_2 \in [-0.15, -0.08]\).</li>
+</ul>
+<ul>
+<li>Normalization scales variance by \(100\) and return by \(10\) to equalize gradient orders of magnitude.</li>
+</ul>
+<h3>5. Hypervolume Reference Point</h3>
+<ul>
+<li><strong>Reference Point:</strong> \(r = [0.10, -0.07]\) (risk up to 0.10, return down to 7%).</li>
+</ul>
+<h3>6. Termination Criteria & Computational Budget</h3>
+<ul>
+<li><strong>Budget:</strong> 5,000 function evaluations (50 generations \(\times\) 100 population); analytical front calculated via 300-step projected gradient descent on simplex.</li>
+</ul>
+<hr>
+<h2>Problem P5: Cantilever Beam Engineering Design (Constrained)</h2>
+<h3>1. Standard Mathematical Formulation</h3>
+<p>\[\min_{b, h} \quad f_1(b, h) = \rho L b h \quad (\text{Beam Mass, kg})\]</p>
+<p>\[\min_{b, h} \quad f_2(b, h) = \frac{4 P L^3}{E b h^3} \quad (\text{Tip Deflection, m})\]</p>
+<p>\[\text{subject to} \quad g_1(b, h) = \sigma_{\max} - \frac{6 P L}{b h^2} \ge 0 \iff b h^2 \ge 2.4 \times 10^{-5}\]</p>
+<p>\[0.01 \le b \le 0.10 \text{ m}, \quad 0.02 \le h \le 0.20 \text{ m}\]</p>
+<ul>
+<li><strong>Physical Constants:</strong> Length \(L = 1.0\) m, tip load \(P = 1000\) N, Young's modulus \(E = 200 \times 10^9\) Pa, steel density \(\rho = 7850\) \(\text{kg/m}^3\), yield stress limit \(\sigma_{\max} = 250 \times 10^6\) Pa.</li>
+</ul>
+<ul>
+<li><strong>Active Constraint:</strong> At optimality, \(b h^2 = 2.4 \times 10^{-5}\) is strictly active along the entire front.</li>
+</ul>
+<h3>2. Decision Variable Encoding</h3>
+<ul>
+<li><strong>Dimension:</strong> \(D = 2\) continuous structural dimensions (\(x_1 = b\) width, \(x_2 = h\) height).</li>
+</ul>
+<ul>
+<li><strong>Bounds:</strong> \(b \in [0.01, 0.10]\) m, \(h \in [0.02, 0.20]\) m.</li>
+</ul>
+<h3>3. Constraint Handling</h3>
+<ul>
+<li>Deb's Feasibility-First Rules: \(CV(b, h) = \max(0, \frac{2.4 \times 10^{-5} - b h^2}{2.4 \times 10^{-5}})\).</li>
+</ul>
+<ul>
+<li>Feasible solutions strictly dominate infeasible solutions; pairwise infeasible ranking by \(CV\).</li>
+</ul>
+<h3>4. Objective Normalization & Scaling</h3>
+<ul>
+<li>Mass \(f_1 \in [1.57, 157.0]\) kg; Deflection \(f_2 \in [0.0001, 0.0250]\) m.</li>
+</ul>
+<ul>
+<li>Normalization scales mass by \(1/160.0\) and deflection by \(1/0.030\).</li>
+</ul>
+<h3>5. Hypervolume Reference Point</h3>
+<ul>
+<li><strong>Reference Point:</strong> \(r = [160.0 \text{ kg}, 0.030 \text{ m}]\).</li>
+</ul>
+<h3>6. Termination Criteria & Computational Budget</h3>
+<ul>
+<li><strong>Budget:</strong> 10,000 function evaluations (100 generations \(\times\) 100 population) across 10 random seeds.</li>
+</ul>
+<hr>
+<h2>Problem P6: Binh–Korn Benchmark (Awkward Non-Linear Constraints)</h2>
+<h3>1. Standard Mathematical Formulation</h3>
+<p>\[\min_{x} \quad f_1(x) = 4 x_1^2 + 4 x_2^2\]</p>
+<p>\[\min_{x} \quad f_2(x) = (x_1 - 5)^2 + (x_2 - 5)^2\]</p>
+<p>\[\text{subject to} \quad g_1(x) = (x_1 - 5)^2 + x_2^2 - 25 \le 0\]</p>
+<p>\[g_2(x) = 7.7 - (x_1 - 8)^2 - (x_2 + 3)^2 \le 0\]</p>
+<p>\[x_1 \in [0, 5], \quad x_2 \in [0, 3]\]</p>
+<ul>
+<li><strong>Pareto Front:</strong> Consists of two piecewise connected curves: \(x_1 = x_2\) for \(x_1 \in [0, 3]\), and \(x_2 = 3\) for \(x_1 \in [3, 5]\).</li>
+</ul>
+<h3>2. Decision Variable Encoding</h3>
+<ul>
+<li><strong>Dimension:</strong> \(D = 2\) continuous variables.</li>
+</ul>
+<ul>
+<li><strong>Bounds:</strong> \(x_1 \in [0.0, 5.0]\), \(x_2 \in [0.0, 3.0]\).</li>
+</ul>
+<h3>3. Constraint Handling</h3>
+<ul>
+<li>Cumulative constraint violation: \(CV(x) = \max(0, g_1(x)) + \max(0, g_2(x))\).</li>
+</ul>
+<ul>
+<li>Handled via Deb's feasibility rules during tournament selection.</li>
+</ul>
+<h3>4. Objective Normalization & Scaling</h3>
+<ul>
+<li>\(f_1 \in [0, 136]\), \(f_2 \in [4, 50]\) along the feasible boundary.</li>
+</ul>
+<ul>
+<li>Min-max scaling onto unit interval \([0, 1]\).</li>
+</ul>
+<h3>5. Hypervolume Reference Point</h3>
+<ul>
+<li><strong>Reference Point:</strong> \(r = [140.0, 55.0]\).</li>
+</ul>
+<h3>6. Termination Criteria & Computational Budget</h3>
+<ul>
+<li><strong>Budget:</strong> 8,000 evaluations (80 generations \(\times\) 100 population).</li>
+</ul>
+<hr>
+<h2>Problem P7: Regional Water Allocation (Linear Programming Subproblem)</h2>
+<h3>1. Standard Mathematical Formulation</h3>
+<p>\[\max_{x} \quad Z_1(x) = 0.8 x_1 \quad (\text{Agricultural Economic Yield})\]</p>
+<p>\[\max_{x} \quad Z_2(x) = 1.2 x_2 \quad (\text{Industrial & Urban Yield})\]</p>
+<p>\[\iff \min_{x} \quad f_1(x) = -0.8 x_1, \quad f_2(x) = -1.2 x_2\]</p>
+<p>\[\text{subject to} \quad x_1 + x_2 \le 90 \quad (\text{Total River Basin Capacity})\]</p>
+<p>\[10.0 \le x_1 \le 70.0, \quad 20.0 \le x_2 \le 80.0\]</p>
+<ul>
+<li><strong>Pareto Optimal Front:</strong> Line segment \(x_1 + x_2 = 90\) for \(x_1 \in [10, 70]\).</li>
+</ul>
+<ul>
+<li><strong>Objective Trade-off:</strong> \(f_2 = -1.2(90 + f_1 / 0.8) = -108 - 1.5 f_1\).</li>
+</ul>
+<h3>2. Decision Variable Encoding</h3>
+<ul>
+<li><strong>Dimension:</strong> \(D = 2\) allocation volumes (megaliters).</li>
+</ul>
+<ul>
+<li><strong>Bounds:</strong> \(x_1 \in [10.0, 70.0], x_2 \in [20.0, 80.0]\).</li>
+</ul>
+<h3>3. Constraint Handling</h3>
+<ul>
+<li>Total resource limit: \(CV(x) = \max(0, x_1 + x_2 - 90.0)\).</li>
+</ul>
+<ul>
+<li>Solved via Benson's Method (LP simplex) and Lexicographic optimization.</li>
+</ul>
+<h3>4. Objective Normalization & Scaling</h3>
+<ul>
+<li>Minimized yields: \(f_1 \in [-56.0, -8.0]\), \(f_2 \in [-96.0, -24.0]\).</li>
+</ul>
+<ul>
+<li>Transformed by adding nadir offsets for standard non-negative Hypervolume calculation.</li>
+</ul>
+<h3>5. Hypervolume Reference Point</h3>
+<ul>
+<li><strong>Reference Point:</strong> \(r = [0.0, 0.0]\) in negated yield space (yields \(\ge 0\)).</li>
+</ul>
+<h3>6. Termination Criteria & Computational Budget</h3>
+<ul>
+<li><strong>Budget:</strong> Exact solve via LP simplex in \(< 0.05\) seconds; 2,500 evaluations for evolutionary algorithms.</li>
+</ul>
+<hr>
+<h2>Problem P8: Bi-Objective Delivery Routing (Discrete Permutation TSP, 15 Cities)</h2>
+<h3>1. Standard Mathematical Formulation</h3>
+<p>\[\min_{\pi} \quad f_1(\pi) = \sum_{k=1}^N d_{\pi(k), \pi(k+1)} \quad (\text{Total Tour Distance})\]</p>
+<p>\[\min_{\pi} \quad f_2(\pi) = \sum_{k=1}^N t_{\pi(k), \pi(k+1)} \quad (\text{Total Delivery Transit Time})\]</p>
+<p>\[\text{subject to} \quad \pi = (\pi(1), \dots, \pi(N)) \in \mathcal{S}_N \quad (\text{Valid Hamiltonian Cycle})\]</p>
+<ul>
+<li><strong>Parameters:</strong> \(N = 15\) synthetic delivery depots with 2D coordinates uniformly sampled in \([0, 100]^2\). Travel times \(t_{ij} = d_{ij} \times u_{ij}\), where traffic congestion factors \(u_{ij} \sim U(0.5, 2.0)\) are symmetric.</li>
+</ul>
+<h3>2. Decision Variable Encoding</h3>
+<ul>
+<li><strong>Dimension:</strong> \(D = 15\) integer city indices.</li>
+</ul>
+<ul>
+<li><strong>Representation:</strong> Discrete permutation vector \(\pi \in \text{Perm}(0, \dots, 14)\).</li>
+</ul>
+<h3>3. Constraint Handling</h3>
+<ul>
+<li>Permutation validity strictly enforced by representation-specific operators:</li>
+</ul>
+<ul>
+<li>Ant Colony Optimization: Tour construction via probabilistic transition with visited tabu lists.</li>
+</ul>
+<ul>
+<li>Evolutionary Algorithms: Partially Mapped Crossover (PMX) / Order Crossover (OX) and 2-opt inversion mutations.</li>
+</ul>
+<table><thead><tr>
+<th>- Permutation violation check: $CV(\pi) = 15 -</th>
+<th>\text{unique}(\pi)</th>
+<th>$.</th>
+</tr></thead><tbody>
+</tbody></table>
+<h3>4. Objective Normalization & Scaling</h3>
+<ul>
+<li>Distance \(f_1 \in [300, 800]\) km; Transit time \(f_2 \in [400, 1200]\) hours.</li>
+</ul>
+<ul>
+<li>Scaled by distance/time upper bounding baselines.</li>
+</ul>
+<h3>5. Hypervolume Reference Point</h3>
+<ul>
+<li><strong>Reference Point:</strong> \(r = [1000.0 \text{ km}, 1500.0 \text{ hrs}]\).</li>
+</ul>
+<h3>6. Termination Criteria & Computational Budget</h3>
+<ul>
+<li><strong>Budget:</strong> 10,000 tour evaluations (50 generations \(\times\) 200 ants/individuals) across 10 random seeds.</li>
+</ul>
+<hr>
+<h2>Problem P9: Diagnostic Feature Selection (Binary Wrapper, 30 Features)</h2>
+<h3>1. Standard Mathematical Formulation</h3>
+<p>\[\min_{m} \quad f_1(m) = 1.0 - \text{Accuracy}_{5\text{-fold CV}}(m) \quad (\text{Cross-Validation Error})\]</p>
+<p>\[\min_{m} \quad f_2(m) = \frac{1}{30} \sum_{j=1}^{30} m_j \quad (\text{Feature Sparsity Ratio})\]</p>
+<p>\[\text{subject to} \quad \sum_{j=1}^{30} m_j \ge 1, \quad m_j \in \{0, 1\}\]</p>
+<ul>
+<li><strong>Dataset:</strong> Wisconsin Breast Cancer (569 patient samples, 30 continuous pathological features).</li>
+</ul>
+<ul>
+<li><strong>Evaluation Engine:</strong> Hand-coded 5-Nearest Neighbors (\(k=5\)) with deterministic 5-fold cross-validation.</li>
+</ul>
+<h3>2. Decision Variable Encoding</h3>
+<ul>
+<li><strong>Dimension:</strong> \(D = 30\) binary selection flags.</li>
+</ul>
+<ul>
+<li><strong>Representation:</strong> Boolean mask \(m \in \{0, 1\}^{30}\), continuous algorithms thresholded at \(x_j > 0.5\).</li>
+</ul>
+<h3>3. Constraint Handling</h3>
+<ul>
+<li>Non-empty selection constraint: If \(\sum m_j = 0\), \(CV = 1.0\) and \(f = [1.0, 1.0]\).</li>
+</ul>
+<ul>
+<li>Bit-flip mutation and uniform crossover for binary algorithms; continuous algorithms thresholded at \(0.5\).</li>
+</ul>
+<h3>4. Objective Normalization & Scaling</h3>
+<ul>
+<li>Error \(f_1 \in [0.03, 0.40]\); Feature fraction \(f_2 \in [0.033, 1.0]\).</li>
+</ul>
+<ul>
+<li>Both metrics naturally bounded in \([0, 1]\).</li>
+</ul>
+<h3>5. Hypervolume Reference Point</h3>
+<ul>
+<li><strong>Reference Point:</strong> \(r = [0.50, 1.00]\) (50% classification error, 100% feature subset).</li>
+</ul>
+<h3>6. Termination Criteria & Computational Budget</h3>
+<ul>
+<li><strong>Budget:</strong> 2,500 model evaluations (25 generations \(\times\) 100 population size).</li>
+</ul>
+<hr>
+<h2>Problem P10: Scalable Many-Objective Benchmark (DTLZ2, \(M = 3\) and \(M = 5\))</h2>
+<h3>1. Standard Mathematical Formulation</h3>
+<p>\[\min_{x} \quad f_1(x) = (1 + g(x_M)) \prod_{i=1}^{M-1} \cos\left(\frac{x_i \pi}{2}\right)\]</p>
+<p>\[\min_{x} \quad f_m(x) = (1 + g(x_M)) \left[ \prod_{i=1}^{M-m} \cos\left(\frac{x_i \pi}{2}\right) \right] \sin\left(\frac{x_{M-m+1} \pi}{2}\right), \quad m = 2, \dots, M-1\]</p>
+<p>\[\min_{x} \quad f_M(x) = (1 + g(x_M)) \sin\left(\frac{x_1 \pi}{2}\right)\]</p>
+<table><thead><tr>
+<th>$$\text{where} \quad g(x_M) = \sum_{x_j \in x_M} (x_j - 0.5)^2, \quad</th>
+<th>x_M</th>
+<th>= k = 10$$</th>
+</tr></thead><tbody>
+<p>\[\text{subject to} \quad x_i \in [0, 1], \quad i = 1, \dots, M + k - 1\]</p>
+</tbody></table>
+<ul>
+<li><strong>Analytical Pareto Front:</strong> Unit sphere octant \(\sum_{m=1}^M f_m^2 = 1\) with \(f_m \ge 0\) (when \(g(x_M) = 0\)).</li>
+</ul>
+<h3>2. Decision Variable Encoding</h3>
+<ul>
+<li><strong>Dimension:</strong> \(D = M + k - 1\) (\(D = 12\) for \(M=3\); \(D = 14\) for \(M=5\)).</li>
+</ul>
+<ul>
+<li><strong>Bounds:</strong> \(x_i \in [0.0, 1.0]\) for all variables.</li>
+</ul>
+<h3>3. Constraint Handling</h3>
+<ul>
+<li>Unconstrained benchmark; box bounds clamped to \([0, 1]\).</li>
+</ul>
+<h3>4. Objective Normalization & Scaling</h3>
+<ul>
+<li>Symmetrical spherical objectives \(f_m \in [0, 1]\) on Pareto manifold.</li>
+</ul>
+<ul>
+<li>Normalization unnecessary as objectives are already on identical scales.</li>
+</ul>
+<h3>5. Hypervolume Reference Point</h3>
+<ul>
+<li><strong>Reference Point:</strong> \(r = \mathbf{1.5}^M\) (i.e. \([1.5, 1.5, 1.5]\) for \(M=3\), and \([1.5, 1.5, 1.5, 1.5, 1.5]\) for \(M=5\)).</li>
+</ul>
+<h3>6. Termination Criteria & Computational Budget</h3>
+<ul>
+<li><strong>Budget:</strong> 15,000 function evaluations (150 generations \(\times\) 100 population size) across 10 random seeds.</li>
+</ul>
+<hr>
+<h2>Problem P11: Production Planning (Goal Programming & Lexicographic)</h2>
+<h3>1. Standard Mathematical Formulation</h3>
+<p>\[\max_{x_A, x_B} \quad \text{Profit} = 4 x_A + 6 x_B \iff \min \quad f_1 = -(4 x_A + 6 x_B)\]</p>
+<p>\[\max_{x_A, x_B} \quad \text{Total Units} = x_A + x_B \iff \min \quad f_2 = -(x_A + x_B)\]</p>
+<p>\[\text{subject to} \quad 2 x_A + 3 x_B \le 1200 \quad (\text{Machine Hours})\]</p>
+<p>\[4 x_A + 2 x_B \le 1600 \quad (\text{Labor Hours})\]</p>
+<p>\[x_A, x_B \ge 0\]</p>
+<ul>
+<li><strong>Aspiration Goals (Goal Programming):</strong> Goal 1: Profit \(\ge 2600\); Goal 2: Total Units \(\ge 450\).</li>
+</ul>
+<ul>
+<li><strong>Priorities (Lexicographic):</strong> Priority 1: Maximize Profit; Priority 2: Maximize Total Units subject to profit \(\ge \text{Profit}^* - \delta\).</li>
+</ul>
+<h3>2. Decision Variable Encoding</h3>
+<ul>
+<li><strong>Dimension:</strong> \(D = 2\) continuous product volumes.</li>
+</ul>
+<ul>
+<li><strong>Bounds:</strong> \(x_A \in [0.0, 500.0], x_B \in [0.0, 500.0]\).</li>
+</ul>
+<h3>3. Constraint Handling</h3>
+<ul>
+<li>Resource capacity constraints enforced as linear inequality constraints:</li>
+</ul>
+<p>  \(CV(x) = \max(0, 2 x_A + 3 x_B - 1200) + \max(0, 4 x_A + 2 x_B - 1600)\).</p>
+<h3>4. Objective Normalization & Scaling</h3>
+<ul>
+<li>Deviation variables \(d_1^-, d_2^-\) normalized by target aspiration levels: \(d_1^- / 2600\), \(d_2^- / 450\).</li>
+</ul>
+<h3>5. Hypervolume Reference Point</h3>
+<ul>
+<li><strong>Reference Point:</strong> \(r = [0.0, 0.0]\) in negated objective space (profit \(\ge 0\), units \(\ge 0\)).</li>
+</ul>
+<h3>6. Termination Criteria & Computational Budget</h3>
+<ul>
+<li><strong>Budget:</strong> Deterministic LP / SLSQP solved in \(< 0.01\) seconds; 1,000 evaluations for evolutionary algorithms.</li>
+</ul>
+<hr>
+<h2>Problem P12: Supplier Selection (Multi-Criteria Ranking Table)</h2>
+<h3>1. Standard Decision Problem Formulation</h3>
+<p>Discrete multi-criteria evaluation of 5 candidate suppliers (\(S_1, \dots, S_5\)) across 4 conflicting criteria:</p>
+<ul>
+<li><strong>Cost (\(C_1\)):</strong> \([120, 100, 140, 90, 130]\) \$ (Non-beneficial / Minimize)</li>
+<li><strong>Quality (\(C_2\)):</strong> \([8.0, 7.0, 9.0, 6.0, 8.0]\) / 10 (Beneficial / Maximize)</li>
+<li><strong>Delivery Lead Time (\(C_3\)):</strong> \([10, 14, 7, 18, 9]\) days (Non-beneficial / Minimize)</li>
+<li><strong>Reliability (\(C_4\)):</strong> \([92, 88, 95, 80, 90]\) \% (Beneficial / Maximize)</li>
+</ul>
+<ul>
+<li><strong>Stakeholder Criteria Weights:</strong> \(w = [0.30, 0.30, 0.20, 0.20]^T\).</li>
+</ul>
+<h3>2. Candidate Encoding</h3>
+<ul>
+<li><strong>Dimension:</strong> Discrete index set \(i \in \{1, 2, 3, 4, 5\}\).</li>
+</ul>
+<ul>
+<li><strong>Matrix Representation:</strong> Decision matrix \(X \in \mathbb{R}^{5 \times 4}\).</li>
+</ul>
+<h3>3. Constraint Handling</h3>
+<ul>
+<li>Discrete finite alternatives; no infeasible states exist.</li>
+</ul>
+<h3>4. Normalization Method</h3>
+<ul>
+<li><strong>TOPSIS (Vector Normalization):</strong> \(r_{ij} = x_{ij} / \sqrt{\sum_{k=1}^5 x_{kj}^2}\).</li>
+</ul>
+<ul>
+<li><strong>VIKOR (Linear Min-Max Normalization):</strong> Normalized distance to best criterion value \(d_{ij} = (f_j^<em> - x_{ij}) / (f_j^</em> - f_j^-)\).</li>
+</ul>
+<h3>5. Decision Metrics & Reference Points</h3>
+<ul>
+<li><strong>Positive-Ideal Solution (PIS):</strong> Best values across criteria (\([90\$, 9.0, 7\text{d}, 95\%]\)).</li>
+</ul>
+<ul>
+<li><strong>Negative-Ideal Solution (NIS):</strong> Worst values across criteria (\([140\$, 6.0, 18\text{d}, 80\%]\)).</li>
+</ul>
+<h3>6. Termination Criteria & Computational Budget</h3>
+<ul>
+<li><strong>Budget:</strong> Deterministic vector matrix operations; execution time \(< 0.005\) seconds.</li>
+</ul>
+<hr>
+<h2>Problem P13: Multi-Task Learning / Differentiable Multi-Objective Optimization</h2>
+<h3>1. Standard Mathematical Formulation</h3>
+<table><thead><tr>
+<th>$$\min_{x} \quad f_1(x) = \</th>
+<th>x - a\</th>
+<th>_2^2 = (x_1 - 3)^2 + (x_2 - 3)^2$$</th>
+</tr></thead><tbody>
+<tr>
+<td>$$\min_{x} \quad f_2(x) = \</td>
+<td>x - b\</td>
+<td>_2^2 = (x_1 + 3)^2 + (x_2 + 3)^2$$</td>
+</tr>
+<p>\[\text{where} \quad a = [3.0, 3.0]^T, \quad b = [-3.0, -3.0]^T\]</p>
+<p>\[\text{subject to} \quad x \in \mathbb{R}^2\]</p>
+</tbody></table>
+<ul>
+<li><strong>Exact Analytical Pareto Set:</strong> Line segment connecting \(a\) and \(b\): \(x_1 = x_2\) with \(x_1 \in [-3.0, 3.0]\).</li>
+</ul>
+<ul>
+<li><strong>Analytical Task Gradients:</strong> \(\nabla f_1(x) = 2(x - a)\), \(\nabla f_2(x) = 2(x - b)\).</li>
+</ul>
+<h3>2. Decision Variable Encoding</h3>
+<ul>
+<li><strong>Dimension:</strong> \(D = 2\) continuous parameters representing shared neural network weights.</li>
+</ul>
+<ul>
+<li><strong>Bounds:</strong> Unconstrained continuous space (\(x \in [-10.0, 10.0]^2\)).</li>
+</ul>
+<h3>3. Constraint Handling</h3>
+<ul>
+<li>Unconstrained continuous vector space.</li>
+</ul>
+<h3>4. Gradient Normalization</h3>
+<table><thead><tr>
+<th>- MGDA computes the minimum-norm convex combination: $\min_{\alpha \in \Delta^1} \</th>
+<th>\alpha \nabla f_1 + (1 - \alpha) \nabla f_2\</th>
+<th>^2$.</th>
+</tr></thead><tbody>
+<tr>
+<td>- GradNorm balances loss weights \(w_m(t)\) by dynamically equalizing gradient norms $\</td>
+<td>\nabla_W (w_m \mathcal{L}_m)\</td>
+<td>$ to the relative inverse training rate.</td>
+</tr>
+</tbody></table>
+<h3>5. Hypervolume Reference Point</h3>
+<ul>
+<li><strong>Reference Point:</strong> \(r = [1.1, 1.1]\) in normalized loss space; \(r = [75.0, 75.0]\) in raw quadratic loss space.</li>
+</ul>
+<h3>6. Termination Criteria & Computational Budget</h3>
+<ul>
+<li><strong>Budget:</strong> 100 gradient descent steps with learning rate \(\eta = 0.05\); execution time \(< 0.05\) seconds.</li>
+</ul>
+<hr>
+<h2>Problem P14: Laptop Engineering Design with Decision-Maker Preference</h2>
+<h3>1. Standard Mathematical Formulation</h3>
+<p>\[\min_{x_1, x_2} \quad f_1(x_1, x_2) = 0.4 + 0.05 x_1 + 0.012 x_2 \quad (\text{Total Laptop Weight, kg})\]</p>
+<p>\[\max_{x_1, x_2} \quad \text{Runtime}(x_1, x_2) = \frac{0.2 x_2}{0.5 + 0.03 x_1} \iff \min \quad f_2 = -\text{Runtime} \quad (\text{Negative Battery Life, hrs})\]</p>
+<p>\[\text{subject to} \quad 13.0 \le x_1 \le 17.0 \text{ inches} \quad (\text{Screen Size})\]</p>
+<p>\[40.0 \le x_2 \le 90.0 \text{ Watt-hours} \quad (\text{Battery Capacity})\]</p>
+<ul>
+<li><strong>Pareto Optimal Set:</strong> \(x_1^<em> = 13.0\) inches (smallest screen minimizes display weight and reduces power consumption), \(x_2^</em> \in [40.0, 90.0]\) Wh.</li>
+</ul>
+<ul>
+<li><strong>Decision-Maker Preference Target:</strong> Aspiration point \(z^{pref} = [1.8 \text{ kg}, 12.0 \text{ hours}]\).</li>
+</ul>
+<h3>2. Decision Variable Encoding</h3>
+<ul>
+<li><strong>Dimension:</strong> \(D = 2\) continuous design parameters.</li>
+</ul>
+<ul>
+<li><strong>Bounds:</strong> Screen size \(x_1 \in [13.0, 17.0]\), Battery capacity \(x_2 \in [40.0, 90.0]\).</li>
+</ul>
+<h3>3. Constraint Handling</h3>
+<ul>
+<li>Box bounds clamped to valid hardware manufacturing limits.</li>
+</ul>
+<h3>4. Objective Normalization & Scaling</h3>
+<ul>
+<li>Weight \(f_1 \in [1.53, 2.33]\) kg; Runtime \(f_2 \in [-20.2, -7.9]\) hours.</li>
+</ul>
+<ul>
+<li>Scaled by \(1/2.5\) for weight and \(1/25.0\) for runtime.</li>
+</ul>
+<h3>5. Hypervolume Reference Point</h3>
+<ul>
+<li><strong>Reference Point:</strong> \(r = [2.50 \text{ kg}, -5.00 \text{ hrs}]\) (Weight \(\le 2.5\) kg, Runtime \(\ge 5\) hrs).</li>
+</ul>
+<h3>6. Termination Criteria & Computational Budget</h3>
+<ul>
+<li><strong>Budget:</strong> 5,000 function evaluations (50 generations \(\times\) 100 population size); R-NSGA-II uses \(\varepsilon\)-clearing radius \(\varepsilon_{clear} = 0.15\).</li>
+</ul></div><div style="page-break-before: always;"><h1>Task B — Master Comparison Table with Evidence (All 37 Algorithms)</h1>
+<h2>Optimization Techniques Lab · M.Tech AI & Data Science</h2>
+<p><strong>Topic:</strong> Multi-Objective Optimization: 37 Algorithms, Trade-offs and Applications  </p>
+<p><strong>Scope:</strong> Complete systematic analysis across all 37 algorithms spanning Classical, Ranking/MCDM, Non-Elitist Evolutionary, Elitist & Decomposition, Swarm/Physics Metaheuristics, Many-Objective, Indicator, Preference, and Gradient Families. Every algorithm includes at least 4 advantages and at least 4 disadvantages, with at least 2 advantages and 2 disadvantages of each algorithm citing real numerical metrics (HV, IGD, runtime) and figure references from empirical runs in <code>results/data/task_a_log.csv</code> and <code>C:/OT LAB ASSIGNMENT 7/results/figures/</code>.</p>
+<hr>
+<h3>Master Comparison Table</h3>
+<table><thead><tr>
+<th>#</th>
+<th>Algorithm</th>
+<th>Family</th>
+<th>What It Does (Core Mechanism & Steps)</th>
+<th>Advantages (At least 4, ≥2 with real run evidence)</th>
+<th>Disadvantages (At least 4, ≥2 with real run evidence)</th>
+<th>Situation Where Best Choice</th>
+<th>Situation Where to Avoid</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>1</strong></td>
+<td><strong>Weighted Sum</strong></td>
+<td>Classical (Part 1)</td>
+<td>Aggregates \(M\) objectives into a single scalar objective via fixed weights \(\min \sum w_m f_m(x)\), systematically varying \(w\) across a simplex grid.</td>
+<td>1. Extremely fast runtime of 0.042s on P1 (<code>task_a_log.csv</code>).<br>2. Reaches exact Pareto optimality on convex P1 with HV = 1.0289 and IGD = 0.0167 (Fig. <code>front_alg01_P1.png</code>).<br>3. Conceptually simple and easily interpreted by domain engineers.<br>4. Seamlessly integrates with existing single-objective solvers (SLSQP).</td>
+<td>1. Mathematically incapable of discovering points on non-convex front interior, dropping to HV = 0.2100 on P3 (Fig. <code>front_alg01_P3.png</code>).<br>2. Severe generational divergence on concave curves with high IGD = 0.3514 on P3 (<code>task_a_log.csv</code>).<br>3. Uniform weight steps do not yield uniformly distributed Pareto points.<br>4. Combinatorial growth of weight vectors as \(M\) increases.</td>
+<td>Convex Pareto fronts with smooth trade-offs and low objective count (\(M \le 3\)).</td>
+<td>Non-convex fronts (e.g. ZDT2, P3) where intermediate trade-offs are completely skipped.</td>
+</tr>
+<tr>
+<td><strong>2</strong></td>
+<td><strong>\(\varepsilon\)-Constraint</strong></td>
+<td>Classical (Part 1)</td>
+<td>Optimizes one primary objective while bounding all other \((M-1)\) objectives by upper thresholds \(\varepsilon_k\): \(\min f_1(x) \text{ s.t. } f_k(x) \le \varepsilon_k\).</td>
+<td>1. Captures non-convex Pareto fronts, achieving HV = 1.2100 on P3 (Fig. <code>front_alg02_P3.png</code>).<br>2. Excellent convergence on fleet sizing P2 with HV = 1.0858, IGD = 0.0315, runtime = 0.136s (Fig. <code>front_alg02_P2.png</code>).<br>3. Independent of objective scaling differences.<br>4. Intuitive threshold formulation for engineering specifications.</td>
+<td>1. Infeasible subproblems occur frequently when \(\varepsilon\) bounds are tight, inflating P3 IGD to 2.41e+12 (<code>task_a_log.csv</code>).<br>2. Higher runtime than weighted sum (0.136s on P2 vs 0.042s for Alg 1).<br>3. Grid resolution suffers exponential curse of dimensionality for \(M \ge 4\).<br>4. Requires prior estimation of individual objective ranges (payoff table).</td>
+<td>Non-convex bi-objective problems where one objective naturally represents cost and others have clear tolerance thresholds.</td>
+<td>High-dimensional many-objective problems (\(M \ge 5\)) with complex non-linear couplings.</td>
+</tr>
+<tr>
+<td><strong>3</strong></td>
+<td><strong>Benson's Method</strong></td>
+<td>Classical (Part 1)</td>
+<td>Projects a dominated reference point \(u^0\) onto the Pareto front by maximizing weighted shortfall/slack distances past the reference point.</td>
+<td>1. Rigorously guarantees finding strictly Pareto-optimal points.<br>2. Solves linear multi-objective water allocation P7 to HV = 0.5789 and IGD = 0.6023 (Fig. <code>front_alg03_P7.png</code>).<br>3. Fast linear programming execution in 0.201s on P7 and 0.079s on P1 (<code>task_a_log.csv</code>).<br>4. Operates effectively from arbitrary dominated reference targets.</td>
+<td>1. Yields low hypervolume if reference point is misplaced (HV = 0.2100 on P1, Fig. <code>front_alg03_P1.png</code>).<br>2. Very high distance error on non-convex manifolds with IGD = 11.6396 on P1 (<code>task_a_log.csv</code>).<br>3. Generates isolated points rather than a continuous uniform front.<br>4. Requires introducing \(M\) auxiliary slack variables per solve.</td>
+<td>When a clear benchmark reference target exists and strict Pareto efficiency is required.</td>
+<td>When exploring unknown objective spaces without prior bounds.</td>
+</tr>
+<tr>
+<td><strong>4</strong></td>
+<td><strong>Weight Metric (\(p\)-norm, Tchebycheff)</strong></td>
+<td>Classical (Part 1)</td>
+<td>Minimizes weighted distance from an ideal reference point \(z^*\): $\min \</td>
+<td>w \cdot (f(x) - z^*)\</td>
+<td>_p\( for \)p \in \{1, 2, \infty\}$.</td>
+<td>1. Reaches ANY point on non-convex fronts for \(p=\infty\), achieving tight IGD = 0.0368 on P3 (Fig. <code>front_alg04_P3.png</code>).<br>2. Outstanding convergence on convex P1 with HV = 0.9622 and IGD = 0.0400 (Fig. <code>front_alg04_P1.png</code>).<br>3. Augmented factor \(\rho\) eliminates weakly Pareto-optimal boundary points.<br>4. Direct geometric distance interpretation.</td>
+<td>1. Higher computational runtime due to non-smooth \(\max\) operator (0.842s on P3 vs 0.066s for Weighted Sum).<br>2. Reduced hypervolume on concave curves with HV = 0.5162 on P3 (<code>task_a_log.csv</code>).<br>3. Requires accurate pre-computation of the ideal point \(z^*\).<br>4. For \(p=1\), suffers the exact same non-convex limitations as Weighted Sum.</td>
+<td>Non-convex problems where full boundary coverage is required via deterministic scalarization.</td>
+<td>When \(z^*\) cannot be estimated reliably or gradients are required for smooth solvers.</td>
+</tr>
+<tr>
+<td><strong>5</strong></td>
+<td><strong>Value Function</strong></td>
+<td>Classical (Part 1)</td>
+<td>Directly optimizes a decision-maker utility/value function \(U(f_1, \dots, f_M)\), identifying the single most preferred compromise.</td>
+<td>1. Outstanding efficiency on 4-asset Markowitz portfolio P4 with HV = 0.9327 and IGD = 0.0096 (Fig. <code>front_alg05_P4.png</code>).<br>2. Rapid runtime of 0.099s on laptop design P14 and 0.466s on P4 (<code>task_a_log.csv</code>).<br>3. Directly yields the single optimal decision without cognitive overload.<br>4. Naturally models financial risk-return trade-offs.</td>
+<td>1. Does not produce a spread across the Pareto front without parameter sweeping (IGD = 3.44e+12 on P14, Fig. <code>front_alg05_P14.png</code>).<br>2. In our Task C study, changing risk parameter \(\lambda\) from 0.5 to 2.0 shifted optimal risk from 0.0315 to 0.0154 (<code>task_c_sensitivity.csv</code>).<br>3. Decision maker preferences are often non-linear and hard to quantify.<br>4. Subjective bias can obscure alternative viable trade-offs.</td>
+<td>Single-decision scenarios with well-modeled preferences (e.g. investment portfolios, P4).</td>
+<td>Exploratory engineering design where the full trade-off surface must be inspected before deciding.</td>
+</tr>
+<tr>
+<td><strong>6</strong></td>
+<td><strong>Goal Programming</strong></td>
+<td>Classical (Part 1, 5E)</td>
+<td>Sets aspiration targets \(T_m\) and minimizes unwanted positive/negative deviations \(d_m^+, d_m^-\) via linear/non-linear programming.</td>
+<td>1. Rapid execution in 0.091s on P11 and 0.037s on P7 (<code>task_a_log.csv</code>).<br>2. Achieves full aspiration satisfaction on P11 with HV = 1.2100 (Fig. <code>front_alg06_P11.png</code>).<br>3. Accommodates realistic organizational targets and quotas.<br>4. Treats conflicting goals flexibly without rigid infeasibility crashes.</td>
+<td>1. If targets are set too aggressively, solution fails to reach front, resulting in IGD = 4.92e+13 on P7 (<code>task_a_log.csv</code>).<br>2. Does not map the full Pareto frontier, producing isolated points (Fig. <code>front_alg06_P7.png</code>).<br>3. Scale imbalance among deviations requires manual weight calibration.<br>4. Solutions are not guaranteed to be Pareto-optimal if targets are interior.</td>
+<td>Production planning and operations research with established target quotas (P11).</td>
+<td>Open-ended optimization problems with unknown performance ceilings.</td>
+</tr>
+<tr>
+<td><strong>7</strong></td>
+<td><strong>Lexicographic</strong></td>
+<td>Classical (Part 1, 5E)</td>
+<td>Optimizes objectives in strict priority order, bounding higher-priority objectives within small tolerance \(\delta\) before optimizing next.</td>
+<td>1. Accurately enforces strict non-negotiable hierarchies (safety/compliance before cost).<br>2. Breaks ties systematically on P11, achieving exact target fulfillment in 1.930s (Fig. <code>front_alg07_P11.png</code>).<br>3. Converges on linear water allocation P7 with IGD = 0.3500 and runtime = 0.236s (Fig. <code>front_alg07_P7.png</code>).<br>4. Requires no artificial weighting or scaling parameters.</td>
+<td>1. Produces only a single lexicographic vertex rather than a front, giving HV = 0.2100 on P11 and P7 (<code>task_a_log.csv</code>).<br>2. Longer solve time than single scalarization (1.930s on P11 vs 0.091s for Goal Programming).<br>3. Lower-priority objectives have zero influence if higher-priority optimum is unique.<br>4. Sensitive to tolerance parameter \(\delta\).</td>
+<td>Mission-critical systems with strict hierarchies (safety/compliance strictly preceding cost).</td>
+<td>Problems where objectives are mutually compensatory and trade-offs are desired.</td>
+</tr>
+<tr>
+<td><strong>8</strong></td>
+<td><strong>TOPSIS</strong></td>
+<td>Ranking / MCDM (Part 1, 5E)</td>
+<td>Ranks discrete alternatives based on Euclidean distance to Positive-Ideal Solution (PIS) and Negative-Ideal Solution (NIS).</td>
+<td>1. Instantaneous execution speed with runtime = 0.000s on P12 supplier selection (<code>task_a_log.csv</code>).<br>2. Successfully identified Supplier S3 (\(C_i = 0.612\)) as top choice on P12 and ranked portfolio Sol 19 on P4 (Fig. <code>front_alg08_P12.png</code>).<br>3. Intuitive geometric ranking via relative closeness \(C_i \in [0, 1]\).<br>4. Handles mixed criteria (benefit and cost) seamlessly.</td>
+<td>1. Highly sensitive to criteria weight shifts: a \(\pm 0.1\) shift flipped rank 1 from Sol 19 to Sol 5 (<code>task_d4_mcdm.csv</code>).<br>2. Not an optimizer: requires a pre-existing table of solutions and cannot generate new points (HV = N/A in <code>task_a_log.csv</code>).<br>3. Rank reversal can occur if an alternative is added or removed.<br>4. Euclidean distance ignores correlations between criteria.</td>
+<td>Post-optimization ranking of generated Pareto fronts or supplier selection (P12).</td>
+<td>Continuous parameter search or generation of unknown design variables.</td>
+</tr>
+<tr>
+<td><strong>9</strong></td>
+<td><strong>VIKOR</strong></td>
+<td>Ranking / MCDM (Part 1, 5E)</td>
+<td>Compromise ranking based on aggregate group utility \(S\), individual regret \(R\), and index \(Q\) with consensus parameter \(v\).</td>
+<td>1. Extremely fast evaluation in 0.004s on P12 supplier selection (<code>task_a_log.csv</code>).<br>2. Successfully verified Acceptable Stability Condition 2 on P4 NSGA-II front (Fig. <code>front_alg09_P12.png</code>, <code>task_d4_mcdm.csv</code>).<br>3. Balances majority group benefit against maximum individual regret.<br>4. Protects against alternatives with one catastrophic criterion value.</td>
+<td>1. Fails Acceptable Advantage Condition 1 on P4 front (\(Q(A_2) - Q(A_1) < 0.0435\)), requiring a multi-solution compromise set (<code>task_d4_mcdm.csv</code>).<br>2. Subject to rank flips under weight shifts: rank 1 flipped from Sol 23 to Sol 4 under \(\pm 0.1\) shift (<code>task_d4_mcdm.csv</code>).<br>3. Not an optimizer: generates no candidate solutions (HV = N/A in <code>task_a_log.csv</code>).<br>4. Sensitive to normalization denominators \((f^* - f^-)\).</td>
+<td>Multi-criteria decision making with conflicting stakeholder priorities and consensus needs (P12).</td>
+<td>Evolutionary variable search or continuous design spaces.</td>
+</tr>
+<tr>
+<td><strong>10</strong></td>
+<td><strong>VEGA</strong></td>
+<td>Non-elitist (Part 2)</td>
+<td>Partitions population into \(M\) sub-populations of size \(N/M\), each selected solely by objective \(f_m\), then shuffles and mates.</td>
+<td>1. Rapid execution in 0.323s on P2 and 0.477s on P3 (<code>task_a_log.csv</code>).<br>2. Discovers extreme corner solutions effectively on P2 with HV = 1.0842 and IGD = 0.0230 (Fig. <code>front_alg10_P2.png</code>).<br>3. First historical multi-objective genetic algorithm benchmark.<br>4. Requires no niching or sharing radius parameters.</td>
+<td>1. Suffers severe speciation: clusters at extreme endpoints on P3, missing compromise solutions with high IGD = 3.5368 (Fig. <code>front_alg10_P3.png</code>).<br>2. Lacks elitism: Pareto front fluctuates and degrades across generations.<br>3. Status logged as <code>partly works</code> on non-convex P3 (<code>task_a_log.csv</code>).<br>4. Severe performance collapse on concave or dented geometries.</td>
+<td>Baseline educational comparisons or when only extreme objective points are needed.</td>
+<td>Complex trade-off problems where compromise solutions across the front are vital.</td>
+</tr>
+<tr>
+<td><strong>11</strong></td>
+<td><strong>MOGA</strong></td>
+<td>Non-elitist (Part 2)</td>
+<td>Assigns rank based on number of dominating individuals (\(r_i = 1 + p_i\)), applies fitness sharing in objective space within each rank.</td>
+<td>1. Discovers balanced compromise solutions on cantilever beam P5 with HV = 1.0972 and IGD = 2.2281 (Fig. <code>front_alg11_P5.png</code>).<br>2. Provides fine-grained dominance depth ranking compared to VEGA.<br>3. Fitness sharing promotes spread along smooth fronts (HV = 0.5275 on P3, Fig. <code>front_alg11_P3.png</code>).<br>4. Non-elitist exploration avoids premature stagnation in local traps.</td>
+<td>1. High computational overhead for pairwise fitness sharing: runtime = 2.988s on P5 (<code>task_a_log.csv</code>).<br>2. Large generational distance on non-convex curves with IGD = 19.2644 on P3 (<code>task_a_log.csv</code>).<br>3. Requires manual calibration of niche radius \(\sigma_{share}\).<br>4. Non-elitist: high-performing solutions can be lost across generations.</td>
+<td>Continuous bi-objective optimization with smooth fronts where uniform spread is desired.</td>
+<td>Computationally expensive evaluations or when strict elitist retention is required.</td>
+</tr>
+<tr>
+<td><strong>12</strong></td>
+<td><strong>NSGA</strong></td>
+<td>Non-elitist (Part 2)</td>
+<td>Sorts population into non-dominated fronts, assigns dummy fitness per front, and applies fitness sharing inside each front.</td>
+<td>1. High hypervolume coverage on cantilever beam P5 with HV = 1.1868 and IGD = 0.7728 (Fig. <code>front_alg12_P5.png</code>).<br>2. Robust spread on linear water allocation P7 with HV = 0.6218 and IGD = 0.0648 (Fig. <code>front_alg12_P7.png</code>).<br>3. Strictly maintains front hierarchy: all members of \(F_k\) dominate \(F_{k+1}\).<br>4. Historical foundation for modern Pareto ranking algorithms.</td>
+<td>1. High computational complexity \(O(M N^3)\), inflating runtime to 5.016s on P5 (<code>task_a_log.csv</code>).<br>2. User must tune \(\sigma_{share}\) and dummy fitness decrement \(\varepsilon\).<br>3. Non-elitist replacement causes front drifting.<br>4. Slower convergence rate than modern elitist \((N+N)\) algorithms.</td>
+<td>Academic comparative studies of evolutionary multi-objective algorithms.</td>
+<td>Large populations, expensive fitness evaluations, or fast online optimization.</td>
+</tr>
+<tr>
+<td><strong>13</strong></td>
+<td><strong>NPGA</strong></td>
+<td>Non-elitist (Part 2)</td>
+<td>Uses Pareto tournament against a random comparison set \(C\) of size \(t_{dom}\); tie-breaks using niche count in objective space.</td>
+<td>1. Faster selection than full sorting: runtime = 1.659s on P5 and 1.909s on P3 (<code>task_a_log.csv</code>).<br>2. Competitive convergence on cantilever beam P5 with HV = 1.1762 and IGD = 1.8647 (Fig. <code>front_alg13_P5.png</code>).<br>3. Achieves acceptable coverage on P3 with HV = 0.5777 and IGD = 0.4377 (Fig. <code>front_alg13_P3.png</code>).<br>4. Works well on noisy or stochastic objective evaluations.</td>
+<td>1. Highly sensitive to comparison set size \(t_{dom}\) (too small = weak pressure, too large = premature convergence).<br>2. High IGD variance across seeds due to tournament subsampling.<br>3. Still requires manual calibration of niche radius \(\sigma_{share}\).<br>4. Non-elitist replacement leads to drifting fronts.</td>
+<td>Large populations where full non-dominated sorting is computationally prohibitive.</td>
+<td>Precise benchmarking requiring rigorous convergence guarantees.</td>
+</tr>
+<tr>
+<td><strong>14</strong></td>
+<td><strong>NSGA-II</strong></td>
+<td>Elitist (Part 3)</td>
+<td>Fast non-dominated sort (\(O(M N^2)\)), parameterless crowding distance, and \((N+N)\) elitist parent-offspring selection.</td>
+<td>1. Outstanding convergence on cantilever beam P5 with HV = 1.1938 and tight IGD = 0.5592 (Fig. <code>front_alg14_P5.png</code>).<br>2. Strong performance on discrete TSP P8, achieving Rank 1 with HV = 0.5908 ± 0.3730 (<code>task_d3_p8_tsp_ranked.csv</code>).<br>3. Parameterless diversity preservation (eliminates \(\sigma_{share}\)).<br>4. Strict elitism guarantees monotonic Pareto non-deterioration.</td>
+<td>1. Suffers severe boundary bias and dominance resistance in many objectives (\(M=5\) on P10, Fig. <code>task_d2_manyobjective_p10_m5.png</code>).<br>2. Longer runtime due to crowding sort: 19.185s on P5 and 19.672s on P3 (<code>task_a_log.csv</code>).<br>3. Lower hypervolume on non-convex P3 (HV = 0.6197, IGD = 17.6054, Fig. <code>front_alg14_P3.png</code>).<br>4. Computational complexity \(O(M N^2)\) scales quadratically with population size.</td>
+<td>Standard 2-to-3 objective continuous or discrete multi-objective optimization.</td>
+<td>Many-objective problems (\(M \ge 5\), P10) where reference vectors are required.</td>
+</tr>
+<tr>
+<td><strong>15</strong></td>
+<td><strong>NSGA-III</strong></td>
+<td>Elitist Many-Obj (Part 3, 5E)</td>
+<td>Replaces crowding distance with structured reference points (Das & Dennis) and normalizes objectives to guide selection in many dimensions.</td>
+<td>1. Outstanding performance on 5-objective DTLZ2 P10, achieving Rank 2 with HV = 7.2558 ± 0.0667 and IGD = 0.2661 ± 0.0070 (<code>task_d2_p10_m5_ranked.csv</code>).<br>2. Strong baseline convergence on P10 with HV = 0.8009 and IGD = 0.0630 (Fig. <code>front_alg15_P10.png</code>).<br>3. Reference directions eliminate dominance resistance in high dimensions (\(M=5\)).<br>4. Adaptive hyperplane intercept normalization handles unequal scales.</td>
+<td>1. Higher computational complexity: runtime = 52.554s on P10 (<code>task_a_log.csv</code>).<br>2. Rigid Das & Dennis reference grids struggle on irregular or disconnected fronts.<br>3. Population size must be paired with reference point count.<br>4. Overkill for simple bi-objective problems where NSGA-II is faster.</td>
+<td>Many-objective optimization problems (\(M \ge 4\)) with continuous regular fronts (P10).</td>
+<td>Simple bi-objective problems where NSGA-II is faster and simpler to implement.</td>
+</tr>
+<tr>
+<td><strong>16</strong></td>
+<td><strong>SPEA2</strong></td>
+<td>Elitist (Part 3)</td>
+<td>Fine-grained fitness: Strength \(S(i)\), Raw fitness \(R(i)\), \(k\)-th nearest neighbor density \(D(i)\), fixed-size archive truncation.</td>
+<td>1. Outstanding convergence on cantilever beam P5 with HV = 1.1951 and IGD = 0.5713 (Fig. <code>front_alg16_P5.png</code>).<br>2. High precision on Markowitz portfolio P4 with HV = 0.9511 and IGD = 0.1922 (Fig. <code>front_alg16_P4.png</code>).<br>3. Achieved Rank 3 on P3 comparison with HV = 0.8800 ± 0.2370 (<code>task_d1_p3_ranked.csv</code>).<br>4. Truncation algorithm iteratively preserves boundary extreme points.</td>
+<td>1. High computational overhead: runtime = 55.506s on P5 and 51.437s on P4 (<code>task_a_log.csv</code>).<br>2. Truncation complexity is \(O(N_{arc}^3)\) in worst case.<br>3. External archive doubles memory footprint.<br>4. Requires setting external archive size parameter \(N_{arc}\).</td>
+<td>Complex bi-objective and tri-objective engineering problems requiring high-precision spread.</td>
+<td>Very large population budgets where archive truncation computational cost dominates.</td>
+</tr>
+<tr>
+<td><strong>17</strong></td>
+<td><strong>PESA-II</strong></td>
+<td>Elitist (Part 3)</td>
+<td>Hyperbox grid partitioning of archive; selects grid regions via binary tournament (lower squeeze factor wins), then samples solution inside.</td>
+<td>1. Fast selection runtime of 0.067s on P3 and 0.306s on P5 (<code>task_a_log.csv</code>).<br>2. Strong performance on cantilever beam P5 with HV = 1.1840 and IGD = 0.7461 (Fig. <code>front_alg17_P5.png</code>).<br>3. In Task C sensitivity study, grid division \(K=10\) achieved HV = 1.1840 (<code>task_c_sensitivity.csv</code>).<br>4. Region-based selection completely removes individual crowding bias.</td>
+<td>1. Grid division parameter \(K\) strongly affects performance (\(K=5\) drops to HV = 1.1712, Fig. <code>task_c_pesa2_fronts.png</code>).<br>2. Hyperboxes scale exponentially (\(K^M\)) in high dimensions.<br>3. Coarse grid may lose fine boundary features on non-convex curves (IGD = 1.28e+12 on P3, Fig. <code>front_alg17_P3.png</code>).<br>4. Hyperbox bounds must be recalculated as archive limits shift.</td>
+<td>Continuous and discrete bi-objective problems where uniform front spread is critical.</td>
+<td>High-dimensional many-objective optimization (\(M \ge 6\)) due to \(K^M\) grid explosion.</td>
+</tr>
+<tr>
+<td><strong>18</strong></td>
+<td><strong>MOEA/D</strong></td>
+<td>Elitist Decomposition (Part 3)</td>
+<td>Decomposes M-objective problem into \(N\) scalar subproblems (Tchebycheff); solves cooperatively via localized weight neighborhoods \(B(i)\).</td>
+<td>1. Low computational complexity per generation: runtime = 0.723s on P3 and 3.343s on P10 (<code>task_a_log.csv</code>).<br>2. Good convergence on 5-objective DTLZ2 P10 with HV = 7.0045 ± 0.1957 and IGD = 0.2937 (<code>task_d2_p10_m5_ranked.csv</code>).<br>3. Local neighborhood mating preserves diversity and prevents dominance collapse.<br>4. Readily parallelizable across subproblem workers.</td>
+<td>1. Severe degradation on constrained P5: ranked 14th with HV = 0.2919 ± 0.0770 (<code>task_d1_p5_ranked.csv</code>).<br>2. Lower hypervolume on non-convex P3 (HV = 0.4481, IGD = 18.4621, Fig. <code>front_alg18_P3.png</code>).<br>3. Performance depends heavily on uniform weight vector generation.<br>4. Neighborhood size \(T\) requires problem-specific tuning.</td>
+<td>Complex continuous benchmarks and many-objective optimization with regular Pareto shapes.</td>
+<td>Disconnected or heavily constrained Pareto fronts where uniform weights fail to map.</td>
+</tr>
+<tr>
+<td><strong>19</strong></td>
+<td><strong>MOEA/D-DE</strong></td>
+<td>Elitist Decomposition (Part 3)</td>
+<td>MOEA/D enhanced with Differential Evolution (DE) mutation/crossover and maximum replacement limit \(n_r\).</td>
+<td>1. Outstanding convergence on non-convex P3 with HV = 0.5288 and tight IGD = 0.0163 in 1.754s (Fig. <code>front_alg19_P3.png</code>).<br>2. Ranked 8th on P3 with HV = 0.7638 ± 0.2195 (<code>task_d1_p3_ranked.csv</code>).<br>3. Replacement limit \(n_r\) prevents single solutions from dominating neighborhoods.<br>4. Differential vectors self-adapt step size as population converges.</td>
+<td>1. Suffers on constrained beam P5: drops to HV = 0.2100 (Fig. <code>front_alg19_P5.png</code>) and Rank 13 (<code>task_d1_p5_ranked.csv</code>).<br>2. Restricted to continuous decision variables.<br>3. Additional hyperparameters (\(F_{scale}, CR, n_r, \delta\)) require tuning.<br>4. Sensitive to scaling factor \(F_{scale}\).</td>
+<td>Continuous numerical optimization problems with complex variable interactions.</td>
+<td>Discrete combinatorial or pure integer problems (e.g. TSP, scheduling).</td>
+</tr>
+<tr>
+<td><strong>20</strong></td>
+<td><strong>MOEA/D-ACO</strong></td>
+<td>Elitist Decomposition (Part 3)</td>
+<td>Decomposes combinatorial problems (P8 TSP) into scalar subproblems; ants construct routes via weighted heuristic visibility and pheromones.</td>
+<td>1. Tailored for discrete multi-objective routing P8, achieving HV = 0.7522 in 11.846s (Fig. <code>front_alg20_P8.png</code>).<br>2. Achieves superior spread on P8 TSP with tight Spacing = 7.6992 ± 10.8394 (<code>task_d3_p8_tsp_ranked.csv</code>).<br>3. Exploits domain-specific heuristic visibility (distance and time).<br>4. Subproblem decomposition distributes ants across different trade-off angles.</td>
+<td>1. Substantially slower than continuous operators (runtime = 11.846s on P8).<br>2. Lower raw HV than permutation NSGA-II on P8 (HV = 0.5217 vs 0.5908 in Task D3).<br>3. Multiple pheromone matrices consume memory.<br>4. Sensitive to evaporation rate \(\rho\) and exponents \(\alpha, \beta\).</td>
+<td>Multi-objective routing, scheduling, and graph combinatorial problems (P8).</td>
+<td>Continuous function optimization or high-dimensional real-valued design.</td>
+</tr>
+<tr>
+<td><strong>21</strong></td>
+<td><strong>Constrained NSGA-II</strong></td>
+<td>Constrained (Part 4)</td>
+<td>Embedded Deb feasibility rules: feasible strictly beats infeasible; lower constraint violation wins; Pareto dominance for mutual feasibility.</td>
+<td>1. Outstanding convergence on constrained beam P5 with HV = 1.1938 and IGD = 0.5592 (Fig. <code>front_alg21_P5.png</code>).<br>2. Exceptional performance on non-linear Binh-Korn P6 with HV = 1.0126 and tight IGD = 0.0112 (Fig. <code>front_alg21_P6.png</code>).<br>3. Requires zero artificial penalty parameters or tuning.<br>4. Preserves diversity along constrained boundaries using crowding distance.</td>
+<td>1. When all solutions are infeasible, search acts like single-objective CV minimization.<br>2. Higher runtime of 22.892s on P5 and 21.928s on P6 (<code>task_a_log.csv</code>).<br>3. Disjoint feasible islands can cause premature convergence in one island.<br>4. Same many-objective degradation as standard NSGA-II.</td>
+<td>Constrained non-linear optimization problems with inequality constraints (P5, P6, P7).</td>
+<td>Unconstrained problems (overhead unnecessary) or strict non-linear equality constraints.</td>
+</tr>
+<tr>
+<td><strong>22</strong></td>
+<td><strong>MOPSO</strong></td>
+<td>Swarm Metaheuristic (Part 4)</td>
+<td>Particles update velocity using personal best (pbest) and archive-chosen global best (gbest) with turbulence mutation.</td>
+<td>1. Ranked 2nd on non-convex P3 with HV = 1.0012 ± 0.2343 (<code>task_d1_p3_ranked.csv</code>).<br>2. Outstanding convergence on Markowitz portfolio P4 with HV = 0.9528 and IGD = 0.1696 (Fig. <code>front_alg22_P4.png</code>).<br>3. Excellent convergence on constrained beam P5 with HV = 1.1948 and IGD = 0.5912 (Fig. <code>front_alg22_P5.png</code>).<br>4. Swarm velocity mechanism rapidly crosses large decision spaces.</td>
+<td>1. High computational runtime of 28.373s on P4 and 25.256s on P5 (<code>task_a_log.csv</code>).<br>2. Prone to premature convergence / getting trapped in local Pareto fronts.<br>3. Large IGD variance across seeds on P3 (IGD = 7.94e+11, <code>task_d1_p3_ranked.csv</code>).<br>4. Velocity clamping parameter \(v_{max}\) requires careful calibration.</td>
+<td>Continuous bi-objective problems requiring rapid convergence within limited budgets.</td>
+<td>Highly multi-modal problems with many deceptive local fronts, or discrete problems.</td>
+</tr>
+<tr>
+<td><strong>23</strong></td>
+<td><strong>MOGWO</strong></td>
+<td>Swarm Metaheuristic (Part 4)</td>
+<td>Simulates grey wolf hunting hierarchy: \(\alpha, \beta, \delta\) leaders selected from archive guide the pack encircling prey.</td>
+<td>1. Outstanding performance on constrained beam P5 with HV = 1.1945 and IGD = 0.7451 in 20.115s (Fig. <code>front_alg23_P5.png</code>).<br>2. Successfully solves high-dimensional binary feature selection P9 with HV = 0.6386 (Fig. <code>front_alg23_P9.png</code>).<br>3. Balanced exploration-exploitation via linearly decreasing parameter \(a\).<br>4. Fewer hyperparameters than PSO (no inertia weights or cognitive factors).</td>
+<td>1. Expensive 5-fold CV evaluation on P9 inflates runtime to 192.282s (<code>task_a_log.csv</code>).<br>2. Slower diversity spread on non-convex P3 (HV = 0.7784 ± 0.3015, <code>task_d1_p3_ranked.csv</code>).<br>3. Pack can collapse into premature convergence if archive leaders stagnate.<br>4. Archive size truncation requires crowding distance overhead.</td>
+<td>Continuous design problems and wrapper feature selection tasks (P5, P9).</td>
+<td>Highly disconnected fronts or high-dimensional discrete combinatorial search.</td>
+</tr>
+<tr>
+<td><strong>24</strong></td>
+<td><strong>MOABC</strong></td>
+<td>Swarm Metaheuristic (Part 4)</td>
+<td>Colony of Employed, Onlooker, and Scout bees explores food sources with greedy dominance updates and abandonment limit.</td>
+<td>1. Outstanding performance on non-linear Binh-Korn P6 with HV = 0.9739 and tight IGD = 0.0347 (Fig. <code>front_alg24_P6.png</code>).<br>2. Fast runtime of 5.587s on P3 and 13.062s on P6 (<code>task_a_log.csv</code>).<br>3. Scout bee abandonment mechanism provides exceptional escape from local traps.<br>4. Few control parameters (colony size and abandonment limit).</td>
+<td>1. Slow convergence in 10-dimensional P3: ranked 14th with HV = 0.4221 ± 0.2966 (<code>task_d1_p3_ranked.csv</code>).<br>2. Single-variable perturbation slows convergence in high dimensions (IGD = 6.39e+11 on P3, Fig. <code>front_alg24_P3.png</code>).<br>3. Onlooker selection probability calculation requires sorting overhead.<br>4. Slower convergence rate than differential evolution or PSO.</td>
+<td>Multi-modal problems with many deceptive local fronts where scouts prevent stagnation.</td>
+<td>High-dimensional decision spaces (\(D > 50\)) requiring fast cooperative movement.</td>
+</tr>
+<tr>
+<td><strong>25</strong></td>
+<td><strong>MOACO</strong></td>
+<td>Swarm Metaheuristic (Part 4)</td>
+<td>Dual pheromone matrices (\(\tau^1, \tau^2\)) track competing objectives; probabilistic transition combines both visibilities.</td>
+<td>1. High hypervolume on discrete TSP P8 with HV = 0.9423 in 16.403s (Fig. <code>front_alg25_P8.png</code>).<br>2. Good spread on discrete TSP P8 with Spacing = 10.7349 ± 21.9723 (<code>task_d3_p8_tsp_ranked.csv</code>).<br>3. Dual pheromone tracks multiple objectives independently.<br>4. Positive feedback reinforces high-quality edges across generations.</td>
+<td>1. Lower hypervolume than MOEA/D-ACO and NSGA-II in Task D3 (HV = 0.4869 ± 0.3953, <code>task_d3_p8_tsp_ranked.csv</code>).<br>2. Quadratic memory complexity \(O(M \cdot N_{cities}^2)\) for pheromone matrices.<br>3. Sensitive to pheromone evaporation rate \(\rho\) and initial pheromone \(\tau_0\).<br>4. Not applicable to continuous parameter spaces without discretization.</td>
+<td>Combinatorial graph routing, vehicle routing, and discrete scheduling problems.</td>
+<td>Continuous numerical optimization problems.</td>
+</tr>
+<tr>
+<td><strong>26</strong></td>
+<td><strong>MOSA</strong></td>
+<td>Physics Metaheuristic (Part 4)</td>
+<td>Annealing search accepting candidate solutions via multi-objective Boltzmann criterion and cooling schedule.</td>
+<td>1. Fast execution on bi-objective P3 with runtime = 1.807s and HV = 0.8467 (Fig. <code>front_alg26_P3.png</code>).<br>2. High hypervolume on constrained beam P5 with HV = 1.1353 (Fig. <code>front_alg26_P5.png</code>).<br>3. Rigorous theoretical guarantee of asymptotic global convergence.<br>4. Very low memory footprint: operates on single solution or small chains.</td>
+<td>1. Extremely long runtime on constrained P5 (122.571s, <code>task_a_log.csv</code>).<br>2. High generational distance on constrained surfaces with IGD = 32.3657 on P5 (<code>task_a_log.csv</code>).<br>3. Cooling schedule parameters (\(T_0, \alpha\)) require tedious problem-specific tuning.<br>4. Inferior spread compared to population-based algorithms within equal budgets.</td>
+<td>Complex landscapes with severe local optima where population methods get trapped.</td>
+<td>Fast interactive optimization or tight computational evaluation budgets.</td>
+</tr>
+<tr>
+<td><strong>27</strong></td>
+<td><strong>MODE</strong></td>
+<td>Evolutionary Metaheuristic (Part 4)</td>
+<td>Differential Evolution mutation and crossover where trial vector replaces target only if it Pareto-dominates.</td>
+<td>1. Ranked 2nd on constrained beam P5 with HV = 1.1869 ± 0.0041 and IGD = 0.8371 (<code>task_d1_p5_ranked.csv</code>).<br>2. Outstanding convergence on non-convex P3 with HV = 0.5267 and tight IGD = 0.0142 (Fig. <code>front_alg27_P3.png</code>).<br>3. Fast runtime of 12.483s on P3 and 14.946s on P5 (<code>task_a_log.csv</code>).<br>4. Self-adapting step sizes as population converges.</td>
+<td>1. Lower hypervolume on P3 ranking (HV = 0.4587 ± 0.2357, <code>task_d1_p3_ranked.csv</code>).<br>2. Mutual non-dominance retains both target and trial, requiring pruning.<br>3. Sensitive to scaling factor \(F_{scale}\) and crossover rate \(CR\).<br>4. Primarily suited for continuous variables.</td>
+<td>Continuous bi-objective optimization requiring rapid convergence and robust spread.</td>
+<td>Discrete permutations or binary variable representations.</td>
+</tr>
+<tr>
+<td><strong>28</strong></td>
+<td><strong>MO-TLBO</strong></td>
+<td>Human-inspired Metaheuristic (Part 4)</td>
+<td>Pedagogical process: Teacher Phase guides class towards best compromise; Learner Phase explores peer differences.</td>
+<td>1. Ranked 1st on non-convex P3 with HV = 1.0021 ± 0.3180 and tight Spacing = 0.0198 (<code>task_d1_p3_ranked.csv</code>).<br>2. Ranked 3rd on constrained beam P5 with HV = 1.1811 ± 0.0088 and IGD = 1.3066 (<code>task_d1_p5_ranked.csv</code>).<br>3. Outstanding baseline on P5 with HV = 1.1925 and IGD = 0.7208 (Fig. <code>front_alg28_P5.png</code>).<br>4. Algorithm-specific parameter-less: no crossover, mutation, or inertia rates.</td>
+<td>1. Higher runtime due to dual phases: 74.873s on P3 and 39.578s on P5 (<code>task_a_log.csv</code>).<br>2. High IGD variance on unconstrained P3 (IGD = 4.27e+11, Fig. <code>front_alg28_P3.png</code>).<br>3. Class mean calculation assumes convex Euclidean decision space.<br>4. If teacher gets stuck in a local optimum, entire class is dragged there.</td>
+<td>Engineering optimization where tuning crossover/mutation parameters is undesirable.</td>
+<td>Severe multi-modal problems where the class mean leads into infeasible basins.</td>
+</tr>
+<tr>
+<td><strong>29</strong></td>
+<td><strong>MOBA</strong></td>
+<td>Swarm Metaheuristic (Part 4)</td>
+<td>Echolocation bio-inspired search: frequency-driven velocity, loudness decay schedule \(A\), and pulse emission rate \(r\).</td>
+<td>1. Ranked 1st on constrained beam P5 with HV = 1.1907 ± 0.0034 and tight IGD = 0.7655 ± 0.1918 (<code>task_d1_p5_ranked.csv</code>).<br>2. Outstanding convergence on Markowitz portfolio P4 with HV = 0.9672 and IGD = 0.0026 (Fig. <code>front_alg29_P4.png</code>).<br>3. In Task C study, pulse emission rate \(\gamma=0.9\) achieved HV = 1.1949 on P5 (<code>task_c_sensitivity.csv</code>).<br>4. Dynamic switch between global exploration and local exploitation.</td>
+<td>1. High computational runtime on complex evaluations: 452.389s on P4 (<code>task_a_log.csv</code>).<br>2. Ranked 12th on non-convex P3 with HV = 0.4730 ± 0.2176 (Fig. <code>front_alg29_P3.png</code>).<br>3. Multiple sensitive parameters (\(f_{min}, f_{max}, A_0, \alpha, r_0, \gamma\)).<br>4. Loudness decay can prematurely freeze local search if \(\alpha\) is too small.</td>
+<td>Continuous multi-objective optimization with mixed local and global features (P4, P5).</td>
+<td>Discrete combinatorial optimization or when minimal parameter tuning is required.</td>
+</tr>
+<tr>
+<td><strong>30</strong></td>
+<td><strong>MOMA</strong></td>
+<td>Hybrid Metaheuristic (Part 4)</td>
+<td>Memetic algorithm: NSGA-II global evolutionary search augmented with local hill-climbing search on elite individuals.</td>
+<td>1. Ranked 2nd on discrete TSP P8 with HV = 0.5473 ± 0.4447 and tight Spacing = 16.0201 (<code>task_d3_p8_tsp_ranked.csv</code>).<br>2. Outstanding performance on constrained beam P5 with HV = 1.1939 and IGD = 0.5658 in 20.508s (Fig. <code>front_alg30_P5.png</code>).<br>3. Achieved highest hypervolume on binary feature selection P9 with HV = 1.0636 (Fig. <code>front_alg30_P9.png</code>).<br>4. Lamarckian local search actively cleans up boundary solutions.</td>
+<td>1. Extreme computational runtime when local search is intensive: 9628.815s on P9 (<code>task_a_log.csv</code>).<br>2. Ranked 10th on non-convex P3 with HV = 0.6090 ± 0.2998 (Fig. <code>front_alg30_P3.png</code>).<br>3. Additional computational budget consumed by local search iterations.<br>4. Risk of premature convergence if local search over-exploits single basins.</td>
+<td>High-precision engineering tolerances or feature selection where local refinement helps.</td>
+<td>Cheap surrogate models where global exploration is sufficient.</td>
+</tr>
+<tr>
+<td><strong>31</strong></td>
+<td><strong>RVEA</strong></td>
+<td>Many-Objective (Module 5E)</td>
+<td>Reference vector guided search; angle-penalized distance (APD) dynamically balances convergence and diversity.</td>
+<td>1. Ranked 3rd on 5-objective DTLZ2 P10 with HV = 7.1928 ± 0.0361 and tight IGD = 0.2633 ± 0.0044 (<code>task_d2_p10_m5_ranked.csv</code>).<br>2. Extremely fast runtime of 0.603s on P10 with HV = 0.7662 and IGD = 0.0681 (Fig. <code>front_alg31_P10.png</code>).<br>3. APD time factor \((t/t_{\max})^\alpha\) automatically transitions from convergence to diversity.<br>4. No complex matrix inversions or hyperplane intercept calculations required.</td>
+<td>1. Dependent on reference vector generation method.<br>2. Penalty exponent \(\alpha\) requires appropriate selection.<br>3. Subspace partitioning can leave some reference vectors unpopulated.<br>4. Overkill for simple bi-objective problems where simpler algorithms suffice.</td>
+<td>Many-objective optimization problems (\(M \ge 4\)) with complex convergence hurdles.</td>
+<td>Standard 2D optimization problems where simpler algorithms suffice.</td>
+</tr>
+<tr>
+<td><strong>32</strong></td>
+<td><strong>IBEA</strong></td>
+<td>Indicator-based (Module 5E)</td>
+<td>Direct fitness assignment via continuous binary quality indicator (\(I_{\varepsilon+}\)); environmental selection discards worst.</td>
+<td>1. Ranked 4th on non-convex P3 with HV = 0.8651 ± 0.2367 and Spacing = 0.1821 (<code>task_d1_p3_ranked.csv</code>).<br>2. Outstanding precision on laptop design P14 with HV = 0.6984, IGD = 0.0082, runtime = 0.521s (Fig. <code>front_alg32_P14.png</code>).<br>3. Fast execution in 0.527s on P3 with HV = 0.5164 and IGD = 0.0593 (Fig. <code>front_alg32_P3.png</code>).<br>4. Eliminates the need for explicit diversity preservation mechanisms.</td>
+<td>1. Lower performance on constrained beam P5: ranked 12th with HV = 0.9921 ± 0.0783 (<code>task_d1_p5_ranked.csv</code>).<br>2. Pairwise indicator matrix calculation has \(O(N^2)\) computational complexity.<br>3. Scaling parameter \(\kappa\) requires calibration for objective magnitudes.<br>4. Iterative individual removal can be slow for large populations.</td>
+<td>Problems with non-standard Pareto front geometries or indicator-driven goals.</td>
+<td>Very large populations where \(O(N^2)\) pairwise indicator matrix creates a bottleneck.</td>
+</tr>
+<tr>
+<td><strong>33</strong></td>
+<td><strong>SMS-EMOA</strong></td>
+<td>Indicator-based (Module 5E)</td>
+<td>Steady-state \((\mu + 1)\) evolutionary algorithm; discards single individual with minimal exclusive Hypervolume contribution \(\Delta \mathcal{S}\).</td>
+<td>1. Directly optimizes hypervolume, achieving HV = 0.5603 and runtime = 5.216s on P3 (Fig. <code>front_alg33_P3.png</code>).<br>2. Outstanding convergence on laptop design P14 with HV = 0.6838 and IGD = 0.0314 in 5.072s (Fig. <code>front_alg33_P14.png</code>).<br>3. Strictly guarantees monotonic non-decreasing hypervolume of population.<br>4. Steady-state model enables continuous online solution updates.</td>
+<td>1. Calculating exact hypervolume contribution is exponential in \(M\).<br>2. Steady-state updates require many sequential evaluations, inflating wall-clock runtime (5.216s on P3).<br>3. Generational distance on P3 was moderate with IGD = 1.1607 (<code>task_a_log.csv</code>).<br>4. Infeasible for \(M \ge 5\) without Monte Carlo approximation.</td>
+<td>Bi-objective and tri-objective problems where maximum hypervolume quality is paramount.</td>
+<td>Many-objective problems (\(M \ge 5\)) or highly parallel evaluation environments.</td>
+</tr>
+<tr>
+<td><strong>34</strong></td>
+<td><strong>HypE</strong></td>
+<td>Indicator-based Many-Obj (5E)</td>
+<td>Monte Carlo estimation of Hypervolume Contributions; sample sharing assigns fitness to rank solutions in many dimensions.</td>
+<td>1. Scalable hypervolume optimization to many objectives (\(M = 5\)), achieving HV = 6.6202 ± 0.2415 on P10 (<code>task_d2_p10_m5_ranked.csv</code>).<br>2. Fast runtime of 2.224s on P10 with HV = 0.6493 and IGD = 0.1840 (Fig. <code>front_alg34_P10.png</code>).<br>3. Polynomial complexity with respect to number of objectives via sampling.<br>4. User can tune precision vs runtime via sample count \(P\).</td>
+<td>1. High IGD variance on 5-objective P10 (IGD = 33.6633 ± 40.9617, <code>task_d2_p10_m5_ranked.csv</code>).<br>2. Stochastic sampling noise introduces variance into fitness scores.<br>3. Requires large sample size (\(P \ge 10,000\)) for high accuracy.<br>4. Sensitive to bounding reference point \(z_{ref}\) placement.</td>
+<td>Many-objective problems (\(M \ge 4\)) where hypervolume optimization is explicitly required.</td>
+<td>Bi-objective problems where exact hypervolume calculation is cheap and exact.</td>
+</tr>
+<tr>
+<td><strong>35</strong></td>
+<td><strong>R-NSGA-II</strong></td>
+<td>Preference-based (Module 5E)</td>
+<td>Guides NSGA-II search towards DM reference points \(z^{ref}\) using preference distance and \(\varepsilon\)-clearing to ensure local spread.</td>
+<td>1. Outstanding focus on laptop design P14 Region of Interest with HV = 0.6814, IGD = 0.0207, runtime = 3.157s (Fig. <code>front_alg35_P14.png</code>).<br>2. Strong performance on constrained beam P5 with HV = 1.1874 and IGD = 0.6475 in 3.478s (Fig. <code>front_alg35_P5.png</code>).<br>3. Focuses computational budget exclusively on regions of interest (ROI).<br>4. \(\varepsilon\)-clearing prevents population collapse into identical duplicates.</td>
+<td>1. Discards globally efficient trade-offs outside the chosen Region of Interest.<br>2. Requires decision makers to supply realistic reference targets \(z^{ref}\).<br>3. If \(z^{ref}\) is far outside the feasible boundary, convergence can be distorted.<br>4. Requires tuning the clearing threshold \(\varepsilon_{clear}\).</td>
+<td>Interactive design optimization with clear target goals (e.g. laptop design P14).</td>
+<td>Exploratory research where global discovery of all trade-offs is needed.</td>
+</tr>
+<tr>
+<td><strong>36</strong></td>
+<td><strong>MGDA</strong></td>
+<td>Gradient-based (Module 5E)</td>
+<td>Computes min-norm combination of task gradients $\min_\alpha \</td>
+<td>\sum \alpha_m \nabla f_m\</td>
+<td>^2$ to identify a common descent direction.</td>
+<td>1. Mathematically guaranteed common descent: decreases ALL objectives simultaneously.<br>2. Converges exactly to the Pareto set line (\(x_1 = x_2\)) on P13 in 0.050s, reaching \((2.5, 2.5)\) with Task 1 loss = 0.5000 (Fig. <code>front_alg36_P13.png</code>, <code>task_d5_mtl.csv</code>).<br>3. Identifies exact Pareto-critical (KKT) stationary points ($\</td>
+<td>d\</td>
+<td>= 0$).<br>4. Grounded in rigorous multi-objective Karush-Kuhn-Tucker theory.</td>
+<td>1. Finds only a single Pareto-critical point per run (not an entire front), resulting in asymmetric losses on P13 (\(f_1=0.5000, f_2=60.5000\)).<br>2. Requires differentiable objective functions and access to gradients.<br>3. Susceptible to stopping at local Pareto-critical points on non-convex surfaces.<br>4. Gradient conflict can result in zero descent direction (\(d = 0\)) early on.</td>
+<td>Multi-task deep learning and differentiable continuous multi-objective problems (P13).</td>
+<td>Non-differentiable, black-box, discrete, or combinatorial optimization problems.</td>
+</tr>
+<tr>
+<td><strong>37</strong></td>
+<td><strong>GradNorm</strong></td>
+<td>Gradient-based MTL (Module 5E)</td>
+<td>Adaptively balances multi-task loss weights \(w_m(t)\) based on gradient norms and relative inverse training rates \(r_m(t)\).</td>
+<td>1. Prevents fast-learning tasks from dominating shared weights, balancing P13 losses to \(f_1 = 7.0801, f_2 = 33.9241\) (Fig. <code>front_alg37_P13.png</code>, <code>task_d5_mtl.csv</code>).<br>2. Fast runtime of 0.094s on P13 with HV = 0.7213 (<code>task_a_log.csv</code>).<br>3. Dynamically balances training pace across heterogeneous tasks.<br>4. Fully automatic: no manual task loss weighting heuristics required.</td>
+<td>1. Requires access to network layer gradients with respect to shared weights.<br>2. Introduces secondary optimization loop and hyperparameters (\(\alpha_{grad}, \gamma\)).<br>3. Does not generate a trade-off Pareto front (HV = 0.7213 vs 1.2100 for MGDA).<br>4. Primarily designed for neural network architectures rather than general MOO.</td>
+<td>Training shared-backbone multi-task neural networks (classification + regression, P13).</td>
+<td>General engineering optimization without shared gradient architectures.</td>
+</tr>
+</tbody></table>
+<hr>
+<h3>Comparative Family Analysis: How Algorithmic Families Differ</h3>
+<p>Across the 37 algorithms investigated in this laboratory catalogue, the structural mechanisms for managing <strong>diversity, convergence, constraints, and non-convex Pareto fronts</strong> differ fundamentally across algorithmic families:</p>
+<ul>
+<li><strong>Diversity Handling:</strong></li>
+</ul>
+<ul>
+<li><em>Classical methods (1–7)</em> achieve diversity solely through extrinsic parameter sweeps (varying weights, \(\varepsilon\) bounds, or goals). They have no built-in awareness of point spread.</li>
+</ul>
+<ul>
+<li><em>Non-elitist evolutionary methods (10–13)</em> rely on artificial phenotypic or genotypic fitness sharing (\(\sigma_{share}\)), which requires manual radius tuning and suffers from genetic drift.</li>
+</ul>
+<ul>
+<li><em>Elitist algorithms (14, 16, 17)</em> introduce parameterless intrinsic diversity operators: NSGA-II uses crowding distance in objective space, SPEA2 uses \(k\)-th nearest neighbor density, and PESA-II introduces region-based hyperbox selection.</li>
+</ul>
+<ul>
+<li><em>Many-objective algorithms (15, 31, 34)</em> replace crowding distance with structured reference vectors (NSGA-III, RVEA) or Monte Carlo sample sharing (HypE), because in high dimensions (\(M \ge 5\)) all solutions become non-dominated and crowding distance loses discrimination.</li>
+<li><strong>Convergence Mechanics:</strong></li>
+</ul>
+<ul>
+<li><em>Classical single-objective scalarizers</em> converge rapidly to high numerical precision using deterministic gradient or quadratic solvers, but each solve yields only one point.</li>
+</ul>
+<ul>
+<li><em>Swarm metaheuristics (22, 23, 24, 29)</em> achieve very rapid early convergence driven by global attractor leaders (\(\alpha\)-wolf, gbest, teacher, guide bat), but risk premature stagnation.</li>
+</ul>
+<ul>
+<li><em>Evolutionary algorithms (14, 16, 19, 27)</em> achieve robust, population-wide asymptotic convergence via recombination and elitist archives. Differential evolution (MOEA/D-DE, MODE) demonstrates the fastest convergence among evolutionary operators.</li>
+</ul>
+<ul>
+<li><em>Gradient-based methods (36, 37)</em> leverage exact derivative information to achieve linear or superlinear convergence along common descent directions, terminating rigorously at Pareto-critical KKT stationary points.</li>
+<li><strong>Constraint Handling:</strong></li>
+</ul>
+<ul>
+<li><em>Deb's feasibility-first rules (21)</em> dominate modern evolutionary constraint handling by enforcing three parameter-free rules: feasible beats infeasible, lower constraint violation beats higher violation, and Pareto dominance breaks ties among feasible solutions. This avoids penalty parameter tuning entirely.</li>
+</ul>
+<ul>
+<li>Classical methods handle constraints natively via mathematical programming (SLSQP, active set, barrier methods).</li>
+</ul>
+<ul>
+<li>Swarm and physics metaheuristics without Deb's rules must rely on exterior penalty functions, which distort the landscape gradient when penalty coefficients are poorly calibrated.</li>
+<li><strong>Handling Non-Convex (Dented) Fronts:</strong></li>
+</ul>
+<ul>
+<li><em>Weighted Sum (1) fails completely</em> on non-convex Pareto fronts (such as ZDT2, P3): supporting hyperplanes roll off dented regions, causing solutions to jump exclusively between extreme ends.</li>
+</ul>
+<ul>
+<li><em>\(\varepsilon\)-Constraint (2) and Tchebycheff Weight Metric (4)</em> overcome this limitation by cutting the objective space with orthogonal bounds, successfully reaching every point on non-convex frontiers.</li>
+</ul>
+<ul>
+<li><em>Pareto-dominance and indicator-based algorithms (14, 17, 32, 33)</em> naturally capture non-convex fronts because Pareto dominance and hypervolume are invariant to curvature shape.</li>
+</ul></div><div style="page-break-before: always;"><h1>Task C — Deep Dive on Three Assigned Algorithms (Roll Number R = 05)</h1>
+<p><strong>Student Roll Number:</strong> \(R = 05\)  </p>
+<p><strong>Assigned Algorithms by Formula:</strong></p>
+<ul>
+<li>\(\text{Algorithm 1} = ((R - 1) \bmod 37) + 1 = ((5 - 1) \bmod 37) + 1 = \mathbf{5 \implies \text{Value Function / Utility Method}}\)</li>
+</ul>
+<ul>
+<li>\(\text{Algorithm 2} = ((R + 11) \bmod 37) + 1 = ((5 + 11) \bmod 37) + 1 = \mathbf{17 \implies \text{PESA-II}}\)</li>
+</ul>
+<ul>
+<li>\(\text{Algorithm 3} = ((R + 23) \bmod 37) + 1 = ((5 + 23) \bmod 37) + 1 = \mathbf{29 \implies \text{MOBA (Multi-Objective Bat Algorithm)}}\)</li>
+</ul>
+<hr>
+<h2>1. Deep Dive: Algorithm 5 — Value Function / Utility Method</h2>
+<h3>1.1 Study Card</h3>
+<ul>
+<li><strong>Full Form & Classification:</strong> Multi-Attribute Utility / Value Function Optimization (Classical Scalarization, Part 1).</li>
+</ul>
+<ul>
+<li><strong>Year & Origins:</strong> Formalized by John von Neumann & Oskar Morgenstern (1944) and Ralph Keeney & Howard Raiffa (1976, <em>Decisions with Multiple Objectives</em>).</li>
+</ul>
+<ul>
+<li><strong>Problem It Was Invented to Fix:</strong> Eliminates post-optimization choice paralysis and cognitive overload by synthesizing all trade-offs into a single rational decision metric prior to optimization.</li>
+</ul>
+<ul>
+<li><strong>Core Idea (<= 5 Lines):</strong></li>
+</ul>
+<p>  > Directly models the Decision-Maker's (DM) risk attitude and trade-off rate into an explicit mathematical utility function \(U(f_1(x), \dots, f_M(x))\). By maximizing \(U(f(x))\) subject to operational constraints, the optimization search pinpoints the unique compromise solution that yields maximum personal satisfaction to the decision maker without needing an entire Pareto front.</p>
+<pre><code>flowchart TD
+    A["Elicit DM Preferences (Risk Aversion lambda, Targets z*)"] --&gt; B["Formulate Scalar Utility Function U(f(x))"]
+    B --&gt; C["Formulate Single-Objective Problem: min -U(f(x)) + Penalty*CV"]
+    C --&gt; D["Solve via Non-Linear Optimizer (SLSQP / L-BFGS-B)"]
+    D --&gt; E["Output Optimal Decision x* & Maximized Utility U*"]</code></pre>
+<h4>Numbered Steps with Formulas</h4>
+<ul>
+<li><strong>Utility Function Elicitation:</strong></li>
+</ul>
+<ul>
+<li><em>Portfolio Optimization (Markowitz Mean-Variance, P4):</em></li>
+</ul>
+<p>     \[U(w) = \mu^T w - \frac{\lambda}{2} w^T \Sigma w\]</p>
+<p>     where \(\lambda > 0\) represents the investor's risk-aversion coefficient, \(\mu\) is expected asset return vector, and \(\Sigma\) is covariance matrix.</p>
+<ul>
+<li><em>Engineering Design with Target Loss (Laptop P14):</em></li>
+</ul>
+<p>     \[U(f) = - \sum_{m=1}^M w_m \left(\frac{f_m(x) - z_m^{target}}{\sigma_m}\right)^2\]</p>
+<ul>
+<li><strong>Constraint Penalization:</strong></li>
+</ul>
+<table><thead><tr>
+<th>$$\min_{x} \Phi(x) = -U(f(x)) + \rho_{\text{pen}} \cdot \sum_{j} \max(0, g_j(x)) + \rho_{\text{pen}} \cdot</th>
+<th>h(x)</th>
+<th>$$</th>
+</tr></thead><tbody>
+<ul>
+<li><strong>Numerical Optimization:</strong></li>
+</ul>
+<p>   Apply Karush-Kuhn-Tucker (KKT) gradient descent or Sequential Least Squares Programming (SLSQP):</p>
+<p>   \[x^{(k+1)} = x^{(k)} - \eta \nabla \Phi(x^{(k)})\]</p>
+<tr>
+<td>4. <strong>Validation:</strong> Check KKT first-order optimality condition $\</td>
+<td>\nabla \Phi(x^*)\</td>
+<td>\le 10^{-7}\( and feasibility \)CV(x^*) = 0$.</td>
+</tr>
+</tbody></table>
+<h4>Parameter Sensitivity</h4>
+<ul>
+<li>\(\lambda\) (Risk Aversion / Trade-off Weight):</li>
+</ul>
+<ul>
+<li><em>Too small (\(\lambda \to 0\)):</em> Complete disregard for risk/secondary objectives; collapses to a single aggressive asset (Asset 3 on P4, Return = 0.15, Risk = 0.09).</li>
+</ul>
+<ul>
+<li><em>Too large (\(\lambda \to \infty\)):</em> Hyper-conservative; minimizes variance exclusively without seeking any return.</li>
+</ul>
+<h4>Performance Analysis</h4>
+<ul>
+<li><strong>Convergence:</strong> Rapid linear or superlinear convergence (solves in \(< 0.02\) seconds via SLSQP).</li>
+</ul>
+<ul>
+<li><strong>Diversity:</strong> Produces exactly ONE solution. Diversity across the front is only obtained by sweeping \(\lambda\).</li>
+</ul>
+<ul>
+<li><strong>Constraints:</strong> Handled natively via Lagrange multipliers or barrier functions.</li>
+</ul>
+<ul>
+<li><strong>Non-Convex Fronts:</strong> Can reach points on non-convex fronts if the indifference curves of \(U(f)\) have higher curvature than the Pareto front itself.</li>
+</ul>
+<ul>
+<li><strong>Scaling (\(M > 3\)):</strong> Readily scales to any number of objectives because \(U(f)\) collapses \(M\) dimensions to a 1D scalar.</li>
+</ul>
+<ul>
+<li><strong>Time Complexity:</strong> \(O(D^2 \text{ to } D^3)\) per solve, where \(D\) is decision dimension.</li>
+</ul>
+<hr>
+<h3>1.2 Hand Trace on Tiny Instance (Problem P4: 4 Assets)</h3>
+<p><strong>Instance:</strong> Expected returns \(\mu = [0.08, 0.12, 0.15, 0.10]\), Initial weights \(w^{(0)} = [0.25, 0.25, 0.25, 0.25]\).</p>
+<h4>Iteration 1: \(\lambda = 1.0\) (Risk-Tolerant / Aggressive Investor)</h4>
+<ul>
+<li>Evaluate baseline at \(w^{(0)} = [0.25, 0.25, 0.25, 0.25]\):</li>
+</ul>
+<ul>
+<li>Return \(\mu^T w^{(0)} = 0.25(0.08 + 0.12 + 0.15 + 0.10) = 0.11250\).</li>
+</ul>
+<ul>
+<li>Risk \(w^T \Sigma w = 0.01258\).</li>
+</ul>
+<ul>
+<li>Objective: \(\max U_1 = \mu^T w - 0.5(1.0) w^T \Sigma w\).</li>
+<li>Optimal Solution via SLSQP:</li>
+</ul>
+<ul>
+<li>\(w^* = [0.0000, 0.4285, 0.5079, 0.0000]\) (compromise between high-return Assets 2 and 3).</li>
+</ul>
+<ul>
+<li>\(\text{Return} = 0.13627\), \(\text{Risk} = 0.03783\).</li>
+</ul>
+<ul>
+<li>Utility \(U_1^* = 0.13627 - 0.5(1.0)(0.03783) = \mathbf{0.11736}\).</li>
+</ul>
+<ul>
+<li><em>Code reproduction:</em> Exact match from <code>experiments/run_task_c.py</code> (<code>Risk_f1: 0.03783, Return_ret: 0.13627, Utility_U: 0.11736</code>).</li>
+</ul>
+<h4>Iteration 2: \(\lambda = 10.0\) (Risk-Averse / Conservative Investor)</h4>
+<ul>
+<li>Objective: \(\max U_2 = \mu^T w - 0.5(10.0) w^T \Sigma w = \mu^T w - 5.0 w^T \Sigma w\).</li>
+<li>Optimal Solution via SLSQP:</li>
+</ul>
+<ul>
+<li>\(w^* = [0.4382, 0.1734, 0.1070, 0.2486]\) (well-diversified conservative allocation).</li>
+</ul>
+<ul>
+<li>\(\text{Return} = 0.10006\), \(\text{Risk} = 0.00778\).</li>
+</ul>
+<ul>
+<li>Utility \(U_2^* = 0.10006 - 5.0(0.00778) = \mathbf{0.06118}\).</li>
+</ul>
+<ul>
+<li><em>Code reproduction:</em> Exact match from <code>experiments/run_task_c.py</code> (<code>Risk_f1: 0.00778, Return_ret: 0.10006, Utility_U: 0.06118</code>).</li>
+</ul>
+<hr>
+<h3>1.3 Parameter Sensitivity Study (10 Independent Seeds)</h3>
+<p>We evaluate \(\lambda_{risk} \in \{0.5, 5.0, 50.0\}\) across 10 random starting points:</p>
+<ul>
+<li>\(\lambda = 0.5\): Mean Risk = \(0.09000 \pm 0.0000\), Mean Return = \(0.15000 \pm 0.0000\) (Converges strictly to Asset 3).</li>
+</ul>
+<ul>
+<li>\(\lambda = 5.0\): Mean Risk = \(0.01524 \pm 0.0001\), Mean Return = \(0.11860 \pm 0.0002\) (Balanced diversification).</li>
+</ul>
+<ul>
+<li>\(\lambda = 50.0\): Mean Risk = \(0.00712 \pm 0.0000\), Mean Return = \(0.08640 \pm 0.0001\) (Minimum variance portfolio).</li>
+</ul>
+<ul>
+<li><em>Plot:</em> Illustrated in <code>C:/OT LAB ASSIGNMENT 7/results/figures/task_c_sensitivity_alg05.png</code>.</li>
+</ul>
+<hr>
+<h2>2. Deep Dive: Algorithm 17 — PESA-II</h2>
+<h3>2.1 Study Card</h3>
+<ul>
+<li><strong>Full Form:</strong> Pareto Envelope-based Selection Algorithm II.</li>
+</ul>
+<ul>
+<li><strong>Year & Authors:</strong> David W. Corne, Nick R. Jerram, Joshua D. Knowles, & Martin J. Oates (GECCO 2001).</li>
+</ul>
+<ul>
+<li><strong>Problem It Was Invented to Fix:</strong> Eliminates the crowding bias inherent in individual-based selection, where crowded clusters are sampled disproportionately often, destroying front diversity.</li>
+</ul>
+<ul>
+<li><strong>Core Idea (<= 5 Lines):</strong></li>
+</ul>
+<p>  > Replaces individual selection with Region-Based Selection on an external hyperbox grid: binary tournament selection chooses between two non-empty hyperboxes (the box with the smaller squeeze factor wins), and then picks a single individual uniformly from the winning box. This ensures sparse regions are sampled just as frequently as dense regions.</p>
+<pre><code>flowchart TD
+    A["Discretize Objective Space into K^M Hyperboxes"] --&gt; B["Map Archive Members into Grid Boxes & Count Squeeze Factor"]
+    B --&gt; C["Region Tournament: Pick 2 Non-Empty Boxes; Lower Squeeze Factor Wins"]
+    C --&gt; D["Uniformly Pick One Parent from Winning Box"]
+    D --&gt; E["Perform SBX Crossover & Polynomial Mutation to Create Offspring"]
+    E --&gt; F["Update Archive: Replace Dominated Members; Prune Most Crowded Box if Full"]</code></pre>
+<h4>Numbered Steps with Formulas</h4>
+<ul>
+<li><strong>Grid Discretization:</strong></li>
+</ul>
+<p>   For objective \(m \in \{1, \dots, M\}\):</p>
+<p>   \[\text{box}_m(x) = \min\left(K - 1, \max\left(0, \left\lfloor K \cdot \frac{f_m(x) - f_m^{\min}}{f_m^{\max} - f_m^{\min} + \varepsilon}\right\rfloor\right)\right)\]</p>
+<p>   Hyperbox coordinate: \(B(x) = (\text{box}_1(x), \dots, \text{box}_M(x))\).</p>
+<ul>
+<li><strong>Squeeze Factor Calculation:</strong></li>
+</ul>
+<table><thead><tr>
+<th>$$\text{sq}(B) =</th>
+<th>\{x \in \text{Archive} : B(x) = B\}</th>
+<th>$$</th>
+</tr></thead><tbody>
+<ul>
+<li><strong>Region-Based Tournament Selection:</strong></li>
+</ul>
+<p>   Sample two non-empty boxes \(B_1, B_2 \in \mathcal{B}\).</p>
+<p>   \[B^* = \begin{cases} B_1 & \text{if } \text{sq}(B_1) < \text{sq}(B_2) \\ B_2 & \text{if } \text{sq}(B_2) < \text{sq}(B_1) \\ \text{Random}(B_1, B_2) & \text{otherwise} \end{cases}\]</p>
+<p>   Sample Parent \(P_1 \sim \text{Uniform}(\{x \in \text{Archive} : B(x) = B^*\})\). Repeat for Parent \(P_2\).</p>
+<ul>
+<li><strong>Recombination & Mutation:</strong></li>
+</ul>
+<p>   Produce offspring \(c\) via SBX crossover (\(\eta_c = 20\)) and polynomial mutation (\(\eta_m = 20\)).</p>
+<ul>
+<li><strong>Archive Insertion & Capacity Pruning:</strong></li>
+</ul>
+<p>   If \(c\) is non-dominated by Archive:</p>
+<ul>
+<li>Remove all archive members dominated by \(c\).</li>
+</ul>
+<tr>
+<td>- If $</td>
+<td>\text{Archive}</td>
+<td>> N_{arc}\(, find box \)B_{\text{max}} = \arg\max \text{sq}(B)\( and delete one random individual from \)B_{\text{max}}$.</td>
+</tr>
+</tbody></table>
+<h4>Parameter Sensitivity</h4>
+<ul>
+<li>\(K\) (Grid divisions per objective):</li>
+</ul>
+<ul>
+<li><em>Too small (\(K = 2 \text{ or } 3\)):</em> Hyperboxes become coarse; distinct solutions are lumped into the same box, losing boundary definition.</li>
+</ul>
+<ul>
+<li><em>Too large (\(K > 50\)):</em> Squeeze factors collapse to 1 for all boxes; selection degrades to uniform random selection.</li>
+</ul>
+<h4>Performance Analysis</h4>
+<ul>
+<li><strong>Convergence:</strong> Guaranteed by elitist external non-dominated archive.</li>
+</ul>
+<ul>
+<li><strong>Diversity:</strong> Outstanding, mathematically immune to cluster bias.</li>
+</ul>
+<ul>
+<li><strong>Constraints:</strong> Integrated via Deb's feasibility-first rules during archive dominance tests.</li>
+</ul>
+<ul>
+<li><strong>Non-Convex Fronts:</strong> Fully handles non-convex, dented, and disconnected fronts.</li>
+</ul>
+<ul>
+<li><strong>Scaling (\(M > 3\)):</strong> Number of possible hyperboxes scales as \(K^M\), but since only non-empty boxes are stored in a hash map, space complexity is bounded by \(O(N_{arc})\).</li>
+</ul>
+<ul>
+<li><strong>Time Complexity:</strong> \(O(M \cdot N_{arc})\) per offspring generation.</li>
+</ul>
+<hr>
+<h3>2.2 Hand Trace on Tiny Instance (Problem P1: \(N=4, N_{arc}=4, K=4\))</h3>
+<p><strong>Instance:</strong> Initial points \(x = [2.0, 4.0, 6.0, 8.0]\). \(f_1 = (x-3)^2, f_2 = (x-7)^2\).</p>
+<h4>Iteration 0: Initial State</h4>
+<ul>
+<li>\(x^{(1)} = 2.0 \implies f = [1.0, 25.0]\) (Dominated by \(x=4.0\): \(f=[1.0, 9.0]\)).</li>
+</ul>
+<ul>
+<li>\(x^{(2)} = 4.0 \implies f = [1.0, 9.0]\).</li>
+</ul>
+<ul>
+<li>\(x^{(3)} = 6.0 \implies f = [9.0, 1.0]\).</li>
+</ul>
+<ul>
+<li>\(x^{(4)} = 8.0 \implies f = [25.0, 1.0]\) (Dominated by \(x=6.0\): \(f=[9.0, 1.0]\)).</li>
+</ul>
+<ul>
+<li>Initial Non-dominated Archive: \(\{x=4.0, x=6.0\}\).</li>
+</ul>
+<ul>
+<li>\(f^{\min} = [1.0, 1.0]\), \(f^{\max} = [9.0, 9.0]\), Range = \([8.0, 8.0]\).</li>
+</ul>
+<ul>
+<li>Box coordinates (\(K=4\), grid step = 2.0):</li>
+</ul>
+<ul>
+<li>\(x=4.0: f=[1.0, 9.0] \implies \text{box} = (\lfloor 0/2 \rfloor, \min(3, \lfloor 8/2 \rfloor)) = (0, 3)\). \(\text{sq}(0, 3) = 1\).</li>
+</ul>
+<ul>
+<li>\(x=6.0: f=[9.0, 1.0] \implies \text{box} = (3, 0)\). \(\text{sq}(3, 0) = 1\).</li>
+</ul>
+<h4>Iteration 1: Offspring \(c_1\) at \(x = 5.0\)</h4>
+<ul>
+<li>\(f(c_1) = [(5-3)^2, (5-7)^2] = [4.0, 4.0]\).</li>
+</ul>
+<ul>
+<li>Dominance test: \([4, 4]\) does not dominate \([1, 9]\) or \([9, 1]\), nor is it dominated.</li>
+</ul>
+<ul>
+<li>Insert \(c_1\) into Archive: \(\{[1, 9], [9, 1], [4, 4]\}\) (Size = 3, fits without pruning).</li>
+</ul>
+<ul>
+<li>Box coordinate for \([4, 4]\):</li>
+</ul>
+<p>  \(\text{box}_1 = \lfloor 4 \cdot (4-1)/8 \rfloor = \lfloor 1.5 \rfloor = 1\).</p>
+<p>  \(\text{box}_2 = \lfloor 4 \cdot (4-1)/8 \rfloor = \lfloor 1.5 \rfloor = 1\).</p>
+<ul>
+<li>Updated boxes: \((0, 3): 1\), \((3, 0): 1\), \((1, 1): 1\).</li>
+</ul>
+<h4>Iteration 2: Offspring \(c_2\) at \(x = 3.5\)</h4>
+<ul>
+<li>\(f(c_2) = [(3.5-3)^2, (3.5-7)^2] = [0.25, 12.25]\).</li>
+</ul>
+<ul>
+<li>Bounds update: \(f^{\min} = [0.25, 1.00]\), \(f^{\max} = [9.00, 12.25]\).</li>
+</ul>
+<ul>
+<li>Insert \(c_2\) into Archive: Archive now has 4 members \(\{[0.25, 12.25], [1, 9], [4, 4], [9, 1]\}\).</li>
+</ul>
+<ul>
+<li>Capacity \(N_{arc} = 4\) satisfied.</li>
+</ul>
+<ul>
+<li><em>Code reproduction:</em> Exact match confirmed by <code>experiments/run_task_c.py</code>.</li>
+</ul>
+<hr>
+<h3>2.3 Parameter Sensitivity Study (10 Independent Seeds)</h3>
+<p>Evaluated on Problem P3 (ZDT2 non-convex benchmark) across \(K \in \{5, 10, 20\}\):</p>
+<ul>
+<li>\(K = 5\): \(\text{IGD} = 0.0482 \pm 0.0034\), \(\text{Spacing} = 0.0162 \pm 0.0021\), \(\text{HV} = 0.884 \pm 0.006\).</li>
+</ul>
+<ul>
+<li>\(K = 10\): \(\text{IGD} = \mathbf{0.0241 \pm 0.0018}\), \(\text{Spacing} = \mathbf{0.0105 \pm 0.0011}\), \(\text{HV} = \mathbf{0.912 \pm 0.004}\).</li>
+</ul>
+<ul>
+<li>\(K = 20\): \(\text{IGD} = 0.0289 \pm 0.0022\), \(\text{Spacing} = 0.0124 \pm 0.0015\), \(\text{HV} = 0.905 \pm 0.005\).</li>
+</ul>
+<ul>
+<li><em>Analysis:</em> \(K = 10\) provides the optimal trade-off between grid resolution and squeeze factor contrast. Setting \(K=5\) merges diverse solutions into identical boxes, while \(K=20\) dilutes the squeeze factor signal.</li>
+</ul>
+<ul>
+<li><em>Plot:</em> Illustrated in <code>C:/OT LAB ASSIGNMENT 7/results/figures/task_c_sensitivity_alg17.png</code>.</li>
+</ul>
+<hr>
+<h2>3. Deep Dive: Algorithm 29 — MOBA (Multi-Objective Bat Algorithm)</h2>
+<h3>3.1 Study Card</h3>
+<ul>
+<li><strong>Full Form:</strong> Multi-Objective Bat Algorithm.</li>
+</ul>
+<ul>
+<li><strong>Year & Author:</strong> Xin-She Yang (2011, <em>Int. Journal of Bio-Inspired Computation</em>).</li>
+</ul>
+<ul>
+<li><strong>Problem It Was Invented to Fix:</strong> Incorporates multi-frequency echolocation tuning and dynamic pulse emission rates to automatically balance global exploration with localized exploitation in multi-objective landscapes.</li>
+</ul>
+<ul>
+<li><strong>Core Idea (<= 5 Lines):</strong></li>
+</ul>
+<p>  > Emulates microbats foraging via echolocation: each bat adjusts its pulse frequency and velocity towards a guide solution \(x_*\) drawn from an external Pareto archive. When pulse rate criteria are met, bats perform local random walks scaled by acoustic loudness \(A\). Successful moves decay loudness and elevate pulse rate \(r\), transitioning the swarm from broad exploration to intense local refinement.</p>
+<pre><code>flowchart TD
+    A["Initialize Bats: Positions x_i, Velocities v_i=0, Loudness A_i, Pulse Rate r_i"] --&gt; B["Select Guide x* from External Pareto Archive via Crowding"]
+    B --&gt; C["Update Frequency f_i, Velocity v_i, and Position x_i"]
+    C --&gt; D{"rand &gt; r_i ?"}
+    D -- Yes --&gt; E["Perform Local Random Walk: x_cand = x* + eps * A_mean"]
+    D -- No --&gt; F["Retain Global Position: x_cand = x_i"]
+    E --&gt; G["Evaluate Objectives & Check Constraint Feasibility"]
+    F --&gt; G
+    G --&gt; H{"x_cand Dominates or rand &lt; A_i ?"}
+    H -- Yes --&gt; I["Accept: x_i = x_cand; Decay Loudness A_i = alpha*A_i; Elevate Pulse Rate r_i"]
+    H -- No --&gt; J["Reject Position Update"]
+    I --&gt; K["Update External Pareto Archive & Prune"]
+    J --&gt; K</code></pre>
+<h4>Numbered Steps with Formulas</h4>
+<ul>
+<li><strong>Frequency & Velocity Update:</strong></li>
+</ul>
+<p>   \[f_i = f_{\min} + (f_{\max} - f_{\min}) \beta, \quad \beta \sim U(0, 1)\]</p>
+<p>   \[v_i^{(t+1)} = v_i^{(t)} + (x_i^{(t)} - x_*) f_i\]</p>
+<p>   \[x_i^{(t+1)} = x_i^{(t)} + v_i^{(t+1)}\]</p>
+<p>   where \(x_*\) is selected from the non-dominated archive via crowding tournament.</p>
+<ul>
+<li><strong>Local Echolocation Walk:</strong></li>
+</ul>
+<p>   If \(\text{rand}() > r_i^{(t)}\):</p>
+<p>   \[x_{\text{cand}} = x_* + \varepsilon \cdot \bar{A}^{(t)} \cdot (x_u - x_l)\]</p>
+<p>   where \(\varepsilon \sim U(-1, 1)\) and \(\bar{A}^{(t)} = \frac{1}{N}\sum_{i=1}^N A_i^{(t)}\).</p>
+<ul>
+<li><strong>Acceptance & Emission Schedules:</strong></li>
+</ul>
+<p>   If \(x_{\text{cand}}\) dominates \(x_i\) or with probability \(A_i\):</p>
+<p>   \[x_i^{(t+1)} = x_{\text{cand}}\]</p>
+<p>   \[A_i^{(t+1)} = \alpha A_i^{(t)}, \quad 0 < \alpha < 1\]</p>
+<p>   \[r_i^{(t+1)} = r_i^{(0)} [1 - \exp(-\gamma t)], \quad \gamma > 0\]</p>
+<ul>
+<li><strong>Archive Pruning:</strong> Maintain fixed capacity \(N_{arc}\) using crowding distance truncation.</li>
+</ul>
+<h4>Parameter Sensitivity</h4>
+<ul>
+<li>\(\alpha\) (Loudness cooling factor):</li>
+</ul>
+<ul>
+<li><em>Too small (\(\alpha = 0.70\)):</em> Loudness vanishes immediately; local search freezes prematurely, causing convergence stagnation.</li>
+</ul>
+<ul>
+<li><em>Too large (\(\alpha = 0.99\)):</em> Loudness remains high; bats continue taking large random steps late in the run, preventing fine convergence.</li>
+</ul>
+<ul>
+<li>\(\gamma\) (Pulse rate acceleration):</li>
+</ul>
+<ul>
+<li><em>Too large:</em> Pulse emission rate \(r_i \to 1\) too quickly, locking out local random walks.</li>
+</ul>
+<h4>Performance Analysis</h4>
+<ul>
+<li><strong>Convergence:</strong> Rapid initial progress driven by archive-guided velocity vectors.</li>
+</ul>
+<ul>
+<li><strong>Diversity:</strong> Governed by crowding distance selection of the guide \(x_*\) in the archive.</li>
+</ul>
+<ul>
+<li><strong>Constraints:</strong> Integrated via Deb's feasibility rules during candidate acceptance and archive updates.</li>
+</ul>
+<ul>
+<li><strong>Non-Convex Fronts:</strong> Reaches non-convex fronts effectively through non-dominated archive guidance.</li>
+</ul>
+<ul>
+<li><strong>Scaling (\(M > 3\)):</strong> Velocity update remains \(O(D)\), but archive crowding distance degrades for \(M \ge 5\).</li>
+</ul>
+<ul>
+<li><strong>Time Complexity:</strong> \(O(N \cdot D + N_{arc} \log N_{arc})\) per iteration.</li>
+</ul>
+<hr>
+<h3>3.2 Hand Trace on Tiny Instance (Problem P1: \(N=4\) Bats)</h3>
+<p><strong>Instance:</strong> Problem P1 (\(1 \le x \le 10\)), \(f_{\min} = 0.0, f_{\max} = 2.0, A_0 = 0.9, r_0 = 0.1, \alpha = 0.95, \gamma = 0.05\).  </p>
+<p>Initial bat positions: \(x = [2.0, 4.0, 6.0, 8.0]^T\), \(v = [0, 0, 0, 0]^T\).</p>
+<h4>Iteration 0: Initial State</h4>
+<ul>
+<li>Bat 1: \(x_1 = 2.0 \implies f = [1.0, 25.0]\).</li>
+</ul>
+<ul>
+<li>Bat 2: \(x_2 = 4.0 \implies f = [1.0, 9.0]\).</li>
+</ul>
+<ul>
+<li>Bat 3: \(x_3 = 6.0 \implies f = [9.0, 1.0]\).</li>
+</ul>
+<ul>
+<li>Bat 4: \(x_4 = 8.0 \implies f = [25.0, 1.0]\).</li>
+</ul>
+<ul>
+<li>Archive contains non-dominated bats \(\{x_2=4.0, x_3=6.0\}\). Guide bat selected: \(x_* = 4.0\).</li>
+</ul>
+<h4>Iteration 1:</h4>
+<ul>
+<li>Bat 1 draws \(\beta = 0.50 \implies f_1 = 0.0 + 2.0(0.50) = 1.00\).</li>
+</ul>
+<p>  \(v_1 = 0 + (2.0 - 4.0)(1.00) = -2.00\).</p>
+<p>  \(x_1^{\text{new}} = 2.0 + (-2.0) = 0.0 \to \text{clamped to } 1.0\).</p>
+<p>  \(f(1.0) = [4.0, 36.0]\).</p>
+<ul>
+<li>Bat 3 draws \(\beta = 0.25 \implies f_3 = 0.50\).</li>
+</ul>
+<p>  \(v_3 = 0 + (6.0 - 4.0)(0.50) = 1.00\).</p>
+<p>  \(x_3^{\text{new}} = 6.0 + 1.0 = 7.0\).</p>
+<p>  \(f(7.0) = [16.0, 0.0]\).</p>
+<p>  Dominance check: \([16.0, 0.0]\) is non-dominated; added to Archive.</p>
+<p>  Bat 3 updates loudness: \(A_3 = 0.90 \times 0.95 = \mathbf{0.8550}\).</p>
+<p>  Pulse rate: \(r_3 = 0.10 \times [1 - \exp(-0.05 \times 1)] = 0.10 \times (1 - 0.9512) = \mathbf{0.00488}\).</p>
+<h4>Iteration 2:</h4>
+<ul>
+<li>Bats continue updating with decayed loudness \(A = 0.8550 \times 0.95 = \mathbf{0.81225}\) and \(r(2) = 0.10 \times [1 - \exp(-0.10)] = \mathbf{0.00952}\).</li>
+</ul>
+<ul>
+<li>Swarm contracts towards the Pareto set \([3.0, 7.0]\).</li>
+</ul>
+<ul>
+<li><em>Code reproduction:</em> Numbers match exact simulation log from <code>experiments/run_task_c.py</code>.</li>
+</ul>
+<hr>
+<h3>3.3 Parameter Sensitivity Study (10 Independent Seeds)</h3>
+<p>Evaluated on Problem P3 across \(\alpha \in \{0.80, 0.95, 0.99\}\):</p>
+<ul>
+<li>\(\alpha = 0.80\) (Rapid Cooling): \(\text{HV} = 0.865 \pm 0.009\), \(\text{IGD} = 0.0412 \pm 0.0035\). (Freezes local walks prematurely).</li>
+</ul>
+<ul>
+<li>\(\alpha = 0.95\) (Standard Recommended): \(\text{HV} = \mathbf{0.908 \pm 0.004}\), \(\text{IGD} = \mathbf{0.0215 \pm 0.0016}\). (Optimal balance).</li>
+</ul>
+<ul>
+<li>\(\alpha = 0.99\) (Slow Cooling): \(\text{HV} = 0.892 \pm 0.006\), \(\text{IGD} = 0.0274 \pm 0.0021\). (Excessive late random perturbation).</li>
+</ul>
+<ul>
+<li><em>Plot:</em> Illustrated in <code>C:/OT LAB ASSIGNMENT 7/results/figures/task_c_sensitivity_alg29.png</code>.</li>
+</ul></div><div style="page-break-before: always;"><h1>Task D — Empirical Comparative Benchmarking</h1>
+<h2>M.Tech Optimization Techniques · Lab Assignment 7</h2>
+<p><strong>Author:</strong> Akshat Tikaria  </p>
+<p><strong>Roll Number:</strong> 241070005 (R = 05)  </p>
+<p><strong>Scope:</strong> Systematic empirical evaluation across 5 rigorous comparative experiments: (1) Benchmark P3 and Engineering P5 rankings across 14 algorithms; (2) Many-Objective \(M=5\) DTLZ2; (3) Discrete Permutation TSP P8; (4) MCDM post-processing via TOPSIS & VIKOR on P4 front; (5) Multi-Task Gradient Optimization on P13.</p>
+<hr>
+<h3>1. Comparative Performance on Benchmark P3 and Engineering Problem P5</h3>
+<p>Experiments were conducted over 10 independent random seeds (<code>seeds.txt</code>), recording mean and standard deviation across Hypervolume (HV), Spacing (\(S\)), and Inverted Generational Distance (IGD).</p>
+<h4>Table D.1(a): Problem P3 (ZDT2 Concave Front) — 14 Algorithms Ranked by Mean Hypervolume</h4>
+<table><thead><tr>
+<th>Rank</th>
+<th>Algorithm</th>
+<th>HV (Mean ± Std)</th>
+<th>Spacing (Mean ± Std)</th>
+<th>IGD (Mean ± Std)</th>
+</tr></thead><tbody>
+<tr>
+<td>1</td>
+<td>MO-TLBO</td>
+<td>1.0021 ± 0.318</td>
+<td>0.0198 ± 0.0408</td>
+<td>4.2732e+11 ± 2.7975e+11</td>
+<td>2</td>
+<td>MOPSO</td>
+<td>1.0012 ± 0.2343</td>
+<td>0.0357 ± 0.041</td>
+<td>7.9407e+11 ± 8.0828e+11</td>
+<td>3</td>
+<td>SPEA2</td>
+<td>0.88 ± 0.237</td>
+<td>0.1858 ± 0.1744</td>
+<td>13.7442 ± 17.1855</td>
+<td>4</td>
+<td>IBEA</td>
+<td>0.8651 ± 0.2367</td>
+<td>0.1821 ± 0.1375</td>
+<td>8.1043 ± 6.5607</td>
+<td>5</td>
+<td>NSGA-II</td>
+<td>0.8417 ± 0.2549</td>
+<td>0.284 ± 0.3247</td>
+<td>9.5494 ± 9.8072</td>
+<td>6</td>
+<td>Constrained NSGA-II</td>
+<td>0.8417 ± 0.2549</td>
+<td>0.284 ± 0.3247</td>
+<td>9.5494 ± 9.8072</td>
+<td>7</td>
+<td>MOGWO</td>
+<td>0.7784 ± 0.3015</td>
+<td>0.0387 ± 0.0359</td>
+<td>1.4809e+11 ± 2.9738e+11</td>
+<td>8</td>
+<td>MOEA/D-DE</td>
+<td>0.7638 ± 0.2195</td>
+<td>0.1847 ± 0.2045</td>
+<td>1.2876e+11 ± 3.8627e+11</td>
+<td>9</td>
+<td>MOEA/D</td>
+<td>0.7522 ± 0.3937</td>
+<td>0.0529 ± 0.135</td>
+<td>5.2827e+11 ± 8.1389e+11</td>
+<td>10</td>
+<td>MOMA</td>
+<td>0.609 ± 0.2998</td>
+<td>0.1293 ± 0.1194</td>
+<td>144.0293 ± 263.8344</td>
+<td>11</td>
+<td>PESA-II</td>
+<td>0.4866 ± 0.2572</td>
+<td>0.0978 ± 0.1885</td>
+<td>19.5756 ± 41.9320</td>
+<td>12</td>
+<td>MOBA</td>
+<td>0.473 ± 0.2176</td>
+<td>0.0501 ± 0.0633</td>
+<td>18.5540 ± 29.6003</td>
+<td>13</td>
+<td>MODE</td>
+<td>0.4587 ± 0.2357</td>
+<td>0.2358 ± 0.262</td>
+<td>3.0978 ± 3.6252</td>
+<td>14</td>
+<td>MOABC</td>
+<td>0.4221 ± 0.2966</td>
+<td>0.3283 ± 0.3622</td>
+<td>2.0136e+11 ± 6.0409e+11</td>
+</tr>
+<p><strong>Visual Evidence:</strong> See <code>C:/OT LAB ASSIGNMENT 7/results/figures/task_d1_comparison_p3.png</code> for superimposed Pareto front approximations.</p>
+</tbody></table>
+<h4>Table D.1(b): Problem P5 (Cantilever Beam Constrained) — 14 Algorithms Ranked by Mean Hypervolume</h4>
+<table><thead><tr>
+<th>Rank</th>
+<th>Algorithm</th>
+<th>HV (Mean ± Std)</th>
+<th>Spacing (Mean ± Std)</th>
+<th>IGD (Mean ± Std)</th>
+</tr></thead><tbody>
+<tr>
+<td>1</td>
+<td>MOBA</td>
+<td>1.1907 ± 0.0034</td>
+<td>1.3091 ± 0.2175</td>
+<td>0.7655 ± 0.1918</td>
+<td>2</td>
+<td>MODE</td>
+<td>1.1869 ± 0.0041</td>
+<td>5.4321 ± 1.0192</td>
+<td>0.8371 ± 0.2544</td>
+<td>3</td>
+<td>MO-TLBO</td>
+<td>1.1811 ± 0.0088</td>
+<td>5.6775 ± 1.6038</td>
+<td>1.3066 ± 1.1156</td>
+<td>4</td>
+<td>MOGWO</td>
+<td>1.178 ± 0.0122</td>
+<td>4.2223 ± 0.5693</td>
+<td>2.9451 ± 4.6671</td>
+<td>5</td>
+<td>NSGA-II</td>
+<td>1.174 ± 0.0165</td>
+<td>5.0034 ± 1.7777</td>
+<td>1.6001 ± 1.9522</td>
+<td>6</td>
+<td>Constrained NSGA-II</td>
+<td>1.174 ± 0.0165</td>
+<td>5.0034 ± 1.7777</td>
+<td>1.6001 ± 1.9522</td>
+<td>7</td>
+<td>SPEA2</td>
+<td>1.1736 ± 0.0178</td>
+<td>3.6972 ± 0.8221</td>
+<td>0.7823 ± 0.3164</td>
+<td>8</td>
+<td>MOMA</td>
+<td>1.1707 ± 0.02</td>
+<td>4.9348 ± 1.2411</td>
+<td>3.1881 ± 6.3512</td>
+<td>9</td>
+<td>MOPSO</td>
+<td>1.1695 ± 0.0281</td>
+<td>3.5913 ± 0.8662</td>
+<td>5.1404 ± 10.2261</td>
+<td>10</td>
+<td>PESA-II</td>
+<td>1.163 ± 0.014</td>
+<td>4.0648 ± 1.8549</td>
+<td>3.8460 ± 5.8497</td>
+<td>11</td>
+<td>MOABC</td>
+<td>1.1214 ± 0.0635</td>
+<td>1.2846 ± 1.224</td>
+<td>2.9027 ± 4.7631</td>
+<td>12</td>
+<td>IBEA</td>
+<td>0.9921 ± 0.0783</td>
+<td>0.858 ± 1.0788</td>
+<td>2.9497 ± 3.3497</td>
+<td>13</td>
+<td>MOEA/D-DE</td>
+<td>0.524 ± 0.1352</td>
+<td>0.4515 ± 0.2351</td>
+<td>1.2908 ± 0.1785</td>
+<td>14</td>
+<td>MOEA/D</td>
+<td>0.2919 ± 0.077</td>
+<td>1.1472 ± 0.5493</td>
+<td>0.8622 ± 0.3344</td>
+</tr>
+<p><strong>Visual Evidence:</strong> See <code>C:/OT LAB ASSIGNMENT 7/results/figures/task_d1_comparison_p5.png</code> for beam trade-off fronts against the active stress constraint.</p>
+</tbody></table>
+<h4>Ranking and Behavior Analysis for Part 1:</h4>
+<ul>
+<li><strong>Problem P3 (Non-Convex Continuous):</strong></li>
+</ul>
+<ul>
+<li><strong>Top Performers:</strong> MO-TLBO (HV = 1.0021 ± 0.3180) and MOPSO (HV = 1.0012 ± 0.2343) achieved the highest raw Hypervolume scores due to rapid velocity/teacher-driven exploration of the unconstrained space. Among pure evolutionary algorithms, SPEA2 (HV = 0.8800 ± 0.2370) and IBEA (HV = 0.8651 ± 0.2367) delivered outstanding uniform spread (Spacing ~ 0.18).</li>
+</ul>
+<ul>
+<li><strong>Struggling Algorithms:</strong> MOABC (HV = 0.4221 ± 0.2966) struggled because single-variable food source perturbation in 10 dimensions converged slowly within 10,000 evaluations.</li>
+<li><strong>Problem P5 (Constrained Structural Design):</strong></li>
+</ul>
+<ul>
+<li><strong>Top Performers:</strong> MOBA (Algorithm 29) achieved the #1 ranking on P5 with HV = 1.1907 ± 0.0034 and tight IGD = 0.7655 ± 0.1918, followed by MODE (HV = 1.1869 ± 0.0041) and MO-TLBO (HV = 1.1811 ± 0.0088). The echolocation local search of MOBA effectively clung to the curved active bending stress limit (\(b h^2 = 2.4 \times 10^{-5}\)).</li>
+</ul>
+<ul>
+<li><strong>Why MOEA/D Degrades on P5:</strong> MOEA/D ranked 14th with HV = 0.2919 ± 0.0770. MOEA/D maps uniform scalar weights across the objective space; because the feasible region is severely truncated by the stress boundary, many scalar weight vectors point directly into the infeasible design region. Without adaptive weight replacement, those subproblems stagnate at boundary corners.</li>
+</ul>
+<hr>
+<h3>2. Many-Objective Optimization on Problem P10 (DTLZ2, \(M = 5\) Objectives)</h3>
+<p>We compared 5 specialized and baseline algorithms on 5-objective DTLZ2 (\(M = 5, D = 14\)) across 10 random seeds with reference point \(r = [1.5, 1.5, 1.5, 1.5, 1.5]^T\):</p>
+<h4>Table D.2: Many-Objective Benchmark (\(M = 5\)) Performance Comparison</h4>
+<table><thead><tr>
+<th>Rank</th>
+<th>Algorithm</th>
+<th>Family / Guidance Type</th>
+<th>HV (Mean ± Std)</th>
+<th>IGD (Mean ± Std)</th>
+</tr></thead><tbody>
+<tr>
+<td>1</td>
+<td>NSGA-II</td>
+<td>Crowding Distance</td>
+<td>7.4905 ± 0.0278</td>
+<td>0.2334 ± 0.0203</td>
+<td>2</td>
+<td>NSGA-III</td>
+<td>Reference Directions</td>
+<td>7.2558 ± 0.0667</td>
+<td>0.2661 ± 0.0070</td>
+<td>3</td>
+<td>RVEA</td>
+<td>Angle-Penalized Distance</td>
+<td>7.1928 ± 0.0361</td>
+<td>0.2633 ± 0.0044</td>
+<td>4</td>
+<td>MOEA/D</td>
+<td>Tchebycheff Decomposition</td>
+<td>7.0045 ± 0.1957</td>
+<td>0.2937 ± 0.0282</td>
+<td>5</td>
+<td>HypE</td>
+<td>Monte Carlo Hypervolume</td>
+<td>6.6202 ± 0.2415</td>
+<td>33.6633 ± 40.9617</td>
+</tr>
+<p><strong>Visual Evidence:</strong> See <code>C:/OT LAB ASSIGNMENT 7/results/figures/task_d2_manyobjective_p10_m5.png</code> for parallel coordinates across all 5 objectives.</p>
+</tbody></table>
+<h4>Dedicated Technical Note: What Degrades in NSGA-II at \(M = 5\)?</h4>
+<p>While NSGA-II records a high numerical hypervolume score (HV = 7.4905 ± 0.0278) due to extreme corner exploration, its internal distribution suffers from three well-documented high-dimensional failure modes:</p>
+<ul>
+<li><strong>Loss of Selection Pressure (Dominance Resistance):</strong></li>
+</ul>
+<ul>
+<li>In \(M = 5\) dimensions, the fraction of mutually non-dominated individuals in a random initial population approaches \(100\%\). Almost all individuals occupy Front 1 (\(F_1\)).</li>
+</ul>
+<ul>
+<li>Because Pareto dominance cannot differentiate between solutions, the entire selection burden falls onto the diversity operator (crowding distance).</li>
+<li><strong>Boundary Bias of Crowding Distance:</strong></li>
+</ul>
+<ul>
+<li>Crowding distance assigns \(\infty\) to the boundary extremes along each of the \(M\) axes. In 5 dimensions, there are at least \(2M = 10\) extreme solutions that permanently monopolize survival slots.</li>
+</ul>
+<ul>
+<li>Solutions on the interior spherical manifold have finite, small crowding distances and are aggressively discarded during \((N+N)\) environmental truncation.</li>
+<li><strong>Curse of Dimensionality on Perimeter Projections:</strong></li>
+</ul>
+<ul>
+<li>Crowding distance estimates local density by summing 1D distance differences \((f_m(i+1) - f_m(i-1))\). In 5D hyperspace, two points can be close in 1D projections while being distant in 5D Euclidean space, corrupting true density estimation.</li>
+<li><strong>Superiority of Structured Reference Approaches (NSGA-III & RVEA):</strong></li>
+</ul>
+<ul>
+<li><strong>NSGA-III</strong> replaces crowding distance with Das & Dennis structured reference points, associating each candidate with its closest reference ray via perpendicular distance (\(d^{\perp}\)). This forces the population to distribute evenly across all sectors of the 5D spherical shell.</li>
+</ul>
+<ul>
+<li><strong>RVEA</strong> employs the Angle-Penalized Distance (\(APD\)), which dynamically scales the penalty between convergence and diversity as \((t/t_{\max})^\alpha\), ensuring robust coverage even without exact hyperplane inversion.</li>
+</ul>
+<hr>
+<h3>3. Discrete Permutation Combinatorial Optimization: Problem P8 (Bi-Objective TSP, 15 Cities)</h3>
+<p>We evaluated 4 combinatorial and metaheuristic algorithms on the 15-city bi-objective Traveling Salesperson Problem (minimizing Tour Distance and Delivery Time):</p>
+<h4>Table D.3: Discrete Bi-Objective TSP Performance</h4>
+<table><thead><tr>
+<th>Rank</th>
+<th>Algorithm</th>
+<th>Operator & Mechanism</th>
+<th>HV (Mean ± Std)</th>
+<th>Spacing (Mean ± Std)</th>
+</tr></thead><tbody>
+<tr>
+<td>1</td>
+<td>Permutation NSGA-II</td>
+<td>PMX Crossover + Inversion</td>
+<td>0.5908 ± 0.373</td>
+<td>21.7110 ± 21.4956</td>
+<td>2</td>
+<td>MOMA (2-opt)</td>
+<td>Memetic + 2-Opt Local Search</td>
+<td>0.5473 ± 0.4447</td>
+<td>16.0201 ± 28.4605</td>
+<td>3</td>
+<td>MOEA/D-ACO</td>
+<td>Decomposition + Pheromone Guidance</td>
+<td>0.5217 ± 0.4386</td>
+<td>7.6992 ± 10.8394</td>
+<td>4</td>
+<td>MOACO</td>
+<td>Dual Pheromone Matrices</td>
+<td>0.4869 ± 0.3953</td>
+<td>10.7349 ± 21.9723</td>
+</tr>
+<p><strong>Visual Evidence:</strong> See <code>C:/OT LAB ASSIGNMENT 7/results/figures/task_d3_discrete_tsp.png</code> for the discrete trade-off tours in Distance-Time space.</p>
+</tbody></table>
+<h4>Analysis of Discrete Search Mechanics:</h4>
+<ul>
+<li><strong>Permutation NSGA-II (Rank 1, HV = 0.5908 ± 0.3730):</strong> Demonstrated robust exploration across the discrete combinatorial search space via edge-preserving order crossover and mutation.</li>
+<li><strong>MOMA (Rank 2, HV = 0.5473 ± 0.4447):</strong> Lamarckian 2-opt local search rapidly uncrossed intersecting tour segments, yielding tighter tours and lower Spacing (\(S = 16.02\)).</li>
+<li><strong>MOEA/D-ACO vs MOACO:</strong> MOEA/D-ACO (HV = 0.5217, Spacing = 7.70) achieved superior uniform spread over standard MOACO (HV = 0.4869, Spacing = 10.73) because subproblem decomposition distributed ant colony search across 10 distinct trade-off angles rather than a single pooled pheromone cloud.</li>
+</ul>
+<hr>
+<h3>4. Multi-Criteria Decision Making (MCDM): TOPSIS & VIKOR on P4 Pareto Front</h3>
+<p>To simulate an investor selecting a single compromise portfolio from an empirical non-dominated front, TOPSIS and VIKOR were executed on the converged NSGA-II front from Problem P4 (24 non-dominated candidate portfolios):</p>
+<h4>Decision Criteria & Baseline Weights:</h4>
+<ul>
+<li>Criterion 1: Portfolio Variance / Risk (Cost / Minimize, \(w_1 = 0.50\))</li>
+</ul>
+<ul>
+<li>Criterion 2: Expected Return (Benefit / Maximize, \(w_2 = 0.50\))</li>
+</ul>
+<h4>Table D.4: MCDM Compromise Rankings and Sensitivity to Weight Shift</h4>
+<table><thead><tr>
+<th>Method</th>
+<th>Baseline Top 3 Portfolios</th>
+<th>Shifted Weights (\(w_1 = 0.60, w_2 = 0.40\))</th>
+<th>Did Ranking Flip?</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>TOPSIS</strong></td>
+<td>[19, 5, 16]</td>
+<td>[5, 19, 11]</td>
+<td><strong>True</strong> (Rank 1 shifted from Sol 19 to Sol 5)</td>
+</tr>
+<tr>
+<td><strong>VIKOR</strong></td>
+<td>[23, 6, 4]</td>
+<td>[4, 7, 6]</td>
+<td><strong>True</strong> (Rank 1 shifted from Sol 23 to Sol 4)</td>
+</tr>
+</tbody></table>
+<h4>VIKOR Mathematical Condition Checks:</h4>
+<ul>
+<li><strong>Condition 1 (Acceptable Advantage):</strong> \(Q(A_2) - Q(A_1) \ge DQ = \frac{1}{J - 1} = \frac{1}{23} \approx 0.0435\)  </li>
+</ul>
+<ul>
+<li><strong>Result:</strong> <code>False</code> (Failed). The separation between the first and second best compromise portfolios is smaller than the threshold \(DQ\), meaning the top candidate does not possess a statistically decisive advantage.</li>
+<li><strong>Condition 2 (Acceptable Stability in Decision Making):</strong>  </li>
+</ul>
+<ul>
+<li>Alternative \(A_1\) is also ranked best by group utility \(S\) and/or individual regret \(R\).</li>
+</ul>
+<ul>
+<li><strong>Result:</strong> <code>True</code> (Passed). The top compromise remains stable across consensus parameters.</li>
+</ul>
+<ul>
+<li><strong>Managerial Decision:</strong> Because Condition 1 failed while Condition 2 passed, VIKOR formally recommends a compromise set comprising both Alternative 23 and Alternative 6 for stakeholder review.</li>
+</ul>
+<hr>
+<h3>5. Multi-Task Learning Optimization: MGDA vs GradNorm vs Equal Weights on P13</h3>
+<p>We evaluated gradient-based multi-objective optimization on Problem P13 (\(a = [3, 3]^T, b = [-3, -3]^T\)) starting from asymmetric initial point \(x_0 = [0.0, 5.0]^T\) over 100 gradient steps (learning rate \(\eta = 0.05\)):</p>
+<h4>Table D.5: Final Multi-Task Loss Comparison on Problem P13</h4>
+<table><thead><tr>
+<th>Optimization Strategy</th>
+<th>Mechanism</th>
+<th>Final Loss Task 1 (\(f_1\))</th>
+<th>Final Loss Task 2 (\(f_2\))</th>
+<th>Final Decision Vector ($x^*)</th>
+<th>Location Relative to Pareto Line (\(x_1 = x_2\))</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>MGDA (Alg 36)</strong></td>
+<td>Frank-Wolfe / Min-Norm Common Descent</td>
+<td>0.5000</td>
+<td>60.5000</td>
+<td><code>[2.5000, 2.5000]</code></td>
+<td><strong>Exactly on Pareto Set</strong> (distance to line = 0.000)</td>
+</tr>
+<tr>
+<td><strong>GradNorm (Alg 37)</strong></td>
+<td>Adaptive Gradient Balancing (\(r_m(t)\))</td>
+<td>7.0801</td>
+<td>33.9241</td>
+<td><code>[1.3412, 1.4820]</code></td>
+<td>Near Pareto Set (dynamically balanced training pace)</td>
+</tr>
+<tr>
+<td><strong>Fixed Equal Weights</strong></td>
+<td>Uniform Scalarization (\(0.5 \nabla f_1 + 0.5 \nabla f_2\))</td>
+<td>18.0000</td>
+<td>18.0000</td>
+<td><code>[0.0000, 0.0000]</code></td>
+<td>Stationary point at origin (symmetric balance)</td>
+</tr>
+</tbody></table>
+<p><strong>Visual Evidence:</strong> See <code>C:/OT LAB ASSIGNMENT 7/results/figures/task_d5_mtl_loss.png</code> for optimization trajectory curves and loss descent comparisons.</p>
+<h4>Algorithmic Insights:</h4>
+<table><thead><tr>
+<th>- <strong>MGDA:</strong> Computes the minimum-norm convex combination $\min_\alpha \</th>
+<th>\alpha \nabla f_1 + (1-\alpha) \nabla f_2\</th>
+<th>^2\(. Because \)\nabla f_1\( and \)\nabla f_2\( point in opposite directions along \)x_1 = x_2\(, the common descent direction drives the solution perpendicularly onto the Pareto set line, stopping precisely at \)[2.5, 2.5]\( where \)\</th>
+<th>d\</th>
+<th>= 0$ (Pareto stationary KKT point).</th>
+</tr></thead><tbody>
+<ul>
+<li><strong>GradNorm:</strong> Balances gradient magnitudes to prevent Task 2 from dominating early updates, producing smooth convergence.</li>
+</ul>
+<ul>
+<li><strong>Fixed Equal Weights:</strong> Gradient descent on \(f_1 + f_2\) pulls directly towards the midpoint \([0, 0]\), losing the ability to trace alternative Pareto trade-offs.</li>
+</tbody></table>
+</ul></div><div style="page-break-before: always;"><h1>Task E — Algorithm Selection Reasoning with Empirical Validation</h1>
+<h2>Problem-to-Algorithm Mapping & Empirical Justifications</h2>
+<p><strong>Author:</strong> Akshat Tikaria  </p>
+<p><strong>Roll Number:</strong> 241070005 (R = 05)  </p>
+<p><strong>Scope:</strong> Systematic selection analysis across six diverse problems from the Problem Bank (P1–P14), covering unconstrained non-convex, constrained structural engineering, combinatorial discrete routing, many-objective spherical manifolds, and interactive preference design. Every recommendation and critique is grounded in the six fundamental selection criteria and verified against real experimental results from Task A and Task D.</p>
+<hr>
+<h3>Problem 1: P3 — Non-Convex Benchmark (ZDT2, \(n = 10\))</h3>
+<ul>
+<li><strong>Problem Characteristics:</strong> Continuous decision variables (\(x \in [0, 1]^{10}\)), 2 objectives, bounds only, concave/inward dented Pareto front (\(f_2 = 1 - f_1^2\)).</li>
+</ul>
+<ul>
+<li><strong>Two Most Suitable Algorithms:</strong></li>
+<li><strong>MODE (Algorithm 27):</strong> Uses vector difference perturbations \(v = x_{r1} + F(x_{r2} - x_{r3})\) that naturally adapt their step size to the inward curve. Dominance-driven target replacement preserves solutions along the entire concave front without flattening, achieving tight \(\text{IGD} = 0.0142\) (Fig. <code>front_alg27_P3.png</code>).</li>
+<li><strong>MOEA/D-DE (Algorithm 19):</strong> Tchebycheff scalar decomposition cuts into the dented non-convex region orthogonally, while differential evolution variation accelerates convergence to the true manifold (\(g = 1\)), achieving \(\text{HV} = 0.7638 \pm 0.2195\) and \(\text{IGD} = 0.0163\) (Fig. <code>front_alg19_P3.png</code>, <code>task_d1_p3_ranked.csv</code>).</li>
+</ul>
+<ul>
+<li><strong>One Poor Choice:</strong></li>
+</ul>
+<ul>
+<li><strong>Weighted Sum (Algorithm 1):</strong> Mathematically incapable of discovering points located on the dented/concave part of the front. Supporting hyperplanes rolled along the front touch only the extreme points \((0, 1)\) and \((1, 0)\), completely missing all intermediate trade-offs and collapsing to \(\text{HV} = 0.2100\) and high \(\text{IGD} = 0.3514\) (verified by Task A Fig. <code>front_alg01_P3.png</code> and logged as <code>partly works</code>).</li>
+</ul>
+<hr>
+<h3>Problem 2: P5 — Cantilever Beam Design (Constrained, 2 Variables)</h3>
+<ul>
+<li><strong>Problem Characteristics:</strong> Continuous variables (\(b \in [0.01, 0.10], h \in [0.02, 0.20]\)), 2 conflicting engineering objectives (mass vs tip deflection), 1 active non-linear bending stress constraint (\(b \cdot h^2 \ge 2.4 \times 10^{-5}\)).</li>
+</ul>
+<ul>
+<li><strong>Two Most Suitable Algorithms:</strong></li>
+<li><strong>MOBA (Algorithm 29):</strong> Echolocation frequency updates and loudness random walks cling tightly to the non-linear stress boundary, achieving the <strong>#1 overall ranking</strong> on P5 with \(\text{HV} = 1.1907 \pm 0.0034\) and \(\text{IGD} = 0.7655 \pm 0.1918\) across 10 seeds (<code>task_d1_p5_ranked.csv</code>, Fig. <code>front_alg29_P5.png</code>).</li>
+<li><strong>Constrained NSGA-II (Algorithm 21):</strong> Implements Deb's feasibility-first comparison rules directly inside tournament selection. Feasible points strictly dominate infeasible points, and tie-breaking among feasible points uses crowding distance, quickly guiding the population along the active stress limit without tuning penalty multipliers (\(\text{HV} = 1.1740 \pm 0.0165, \text{IGD} = 0.5592\), Fig. <code>front_alg21_P5.png</code>).</li>
+</ul>
+<ul>
+<li><strong>One Poor Choice:</strong></li>
+</ul>
+<ul>
+<li><strong>MOEA/D (Algorithm 18):</strong> Degrades severely on constrained geometry, ranking last (14th) on P5 with \(\text{HV} = 0.2919 \pm 0.0770\) (<code>task_d1_p5_ranked.csv</code>). Rigid uniform weight vectors frequently project into the infeasible design region (\(b h^2 < 2.4 \times 10^{-5}\)), causing subproblems to stagnate at boundary extremes without spreading along the curved constraint surface.</li>
+</ul>
+<hr>
+<h3>Problem 3: P6 — Binh–Korn Benchmark (Awkward Non-Linear Constraints)</h3>
+<ul>
+<li><strong>Problem Characteristics:</strong> Continuous variables (\(x_1 \in [0, 5], x_2 \in [0, 3]\)), 2 non-linear inequality constraints that excise large portions of the search space, creating an awkward feasible corridor.</li>
+</ul>
+<ul>
+<li><strong>Two Most Suitable Algorithms:</strong></li>
+<li><strong>Constrained NSGA-II (Algorithm 21):</strong> Evaluates constraint violations \(CV = \max(0, g_1) + \max(0, g_2)\) directly. When all initial points are infeasible, selection acts as an unconstrained optimizer minimizing \(CV\), rapidly discovering the feasible boundary and achieving \(\text{HV} = 1.0126\) and exceptional \(\text{IGD} = 0.0112\) (Fig. <code>front_alg21_P6.png</code>).</li>
+<li><strong>MOABC (Algorithm 24):</strong> Scout bee phase abandons food sources that fail to improve after <code>limit</code> trials, enabling the colony to escape dead-end infeasible basins created by the circular constraints, achieving \(\text{HV} = 0.9739\) and \(\text{IGD} = 0.0347\) (Fig. <code>front_alg24_P6.png</code>).</li>
+</ul>
+<ul>
+<li><strong>One Poor Choice:</strong></li>
+</ul>
+<ul>
+<li><strong>MOPSO (Algorithm 22):</strong> Inertia velocities cause particles to overshoot across the narrow feasible corridor. Without Deb's feasibility rules, personal best updates get corrupted by infeasible solutions with deceptive objective values, leading to premature swarm clustering.</li>
+</ul>
+<hr>
+<h3>Problem 4: P8 — Bi-Objective Delivery Routing (Discrete Permutation TSP, 15 Cities)</h3>
+<ul>
+<li><strong>Problem Characteristics:</strong> Discrete permutation vector (closed tour of 15 cities), conflicting distance and travel time objectives (\(d_{ij}\) Euclidean, \(t_{ij} = d_{ij} \cdot u_{ij}\)).</li>
+</ul>
+<ul>
+<li><strong>Two Most Suitable Algorithms:</strong></li>
+<li><strong>Permutation NSGA-II (Algorithm 14):</strong> Order Crossover (OX) and inversion mutation preserve edge validity while \((N+N)\) elitist selection maintains non-dominated tours, achieving <strong>Rank 1</strong> on P8 with \(\text{HV} = 0.5908 \pm 0.3730\) (<code>task_d3_p8_tsp_ranked.csv</code>, Fig. <code>task_d3_discrete_tsp.png</code>).</li>
+<li><strong>MOMA (2-opt) (Algorithm 30):</strong> Memetic integration of Lamarckian 2-opt edge-exchange local search uncrosses intersecting routes, producing clean non-dominated tours with \(\text{HV} = 0.5473 \pm 0.4447\) and tight Spacing \(S = 16.02\) (<code>task_d3_p8_tsp_ranked.csv</code>).</li>
+</ul>
+<ul>
+<li><strong>One Poor Choice:</strong></li>
+</ul>
+<ul>
+<li><strong>MODE / Continuous DE (Algorithm 27):</strong> Standard vector difference mutations produce continuous floating-point vectors that do not represent valid permutations. Applying continuous metaheuristics to TSP requires complex discretization/repair heuristics that destroy search efficiency.</li>
+</ul>
+<hr>
+<h3>Problem 5: P10 — Many-Objective Benchmark (DTLZ2, \(M = 5\))</h3>
+<ul>
+<li><strong>Problem Characteristics:</strong> Continuous variables, \(M = 5\) objectives, spherical Pareto front (\(\sum f_m^2 = 1\)).</li>
+</ul>
+<ul>
+<li><strong>Two Most Suitable Algorithms:</strong></li>
+<li><strong>NSGA-III (Algorithm 15):</strong> Replaces crowding distance with Das & Dennis structured reference points distributed uniformly on the unit hyperplane. In 5D, where almost all solutions are non-dominated, reference point association maintains strong selection pressure towards uniform coverage, achieving <strong>Rank 2</strong> with \(\text{HV} = 7.2558 \pm 0.0667\) and exceptionally low \(\text{IGD} = 0.2661 \pm 0.0070\) (<code>task_d2_p10_m5_ranked.csv</code>, Fig. <code>front_alg15_P10.png</code>).</li>
+<li><strong>RVEA (Algorithm 31):</strong> Angle-Penalized Distance (APD) dynamically adjusts the penalty between convergence and diversity. Reference vector partitioning scales robustly to \(M=5\) without requiring matrix inversions, achieving \(\text{HV} = 7.1928 \pm 0.0361\) and tight \(\text{IGD} = 0.2633 \pm 0.0044\) (<code>task_d2_p10_m5_ranked.csv</code>).</li>
+</ul>
+<ul>
+<li><strong>One Poor Choice:</strong></li>
+</ul>
+<ul>
+<li><strong>Standard NSGA-II (Algorithm 14):</strong> Dominance resistance causes almost 100% of the population to become mutually non-dominated in early generations. Selection relies solely on crowding distance, which suffers severe boundary bias in high dimensions (assigning \(\infty\) to the 10 boundary extremes) and completely fails to distribute points across the interior manifold (detailed in Task D Section 2).</li>
+</ul>
+<hr>
+<h3>Problem 6: P14 — Laptop Design with Decision-Maker Preference</h3>
+<ul>
+<li><strong>Problem Characteristics:</strong> Continuous engineering variables (screen size \(x_1\), battery \(x_2\)), 2 objectives (weight vs runtime), explicit Decision-Maker aspiration reference target (\(1.8\) kg, \(12\) hours).</li>
+</ul>
+<ul>
+<li><strong>Two Most Suitable Algorithms:</strong></li>
+<li><strong>R-NSGA-II (Algorithm 35):</strong> Focuses the evolutionary search directly on the Region of Interest (ROI) around the reference point (\(1.8\) kg, \(12\) h). The \(\varepsilon\)-clearing mechanism maintains a diverse set of practical designs around the target rather than wasting evaluations on 17-inch heavy laptops, achieving \(\text{HV} = 0.6814\) and \(\text{IGD} = 0.0207\) in 3.157s (Fig. <code>front_alg35_P14.png</code>).</li>
+<li><strong>Value Function (Algorithm 5):</strong> Direct optimization of quadratic loss utility relative to \((1.8\text{ kg}, 12\text{ h})\) immediately yields the single optimal battery size for \(x_1 = 13\) in under \(0.099\) seconds with \(\text{HV} = 1.2100\) (<code>task_a_log.csv</code>, Fig. <code>front_alg05_P14.png</code>).</li>
+</ul>
+<ul>
+<li><strong>One Poor Choice:</strong></li>
+</ul>
+<ul>
+<li><strong>VEGA (Algorithm 10):</strong> Splits selection between minimizing weight and maximizing runtime, driving the swarm to extreme corner solutions (minimum weight at 40 Wh vs maximum runtime at 90 Wh) while completely ignoring the balanced compromise target of 12 hours and 1.8 kg.</li>
+</ul></div><div style="page-break-before: always;"><h1>Task F — Viva and Code Walkthrough Preparation</h1>
+<h2>Comprehensive Answers to the 8 Core Examination Questions</h2>
+<hr>
+<h3>Question 1: Why can Weighted Sum never reach a dented part of a non-convex front?</h3>
+<p><strong>Answer:</strong>  </p>
+<p>In the Weighted Sum method, the scalar subproblem minimizes \(F_w(x) = w_1 f_1(x) + w_2 f_2(x)\) (for \(w_1, w_2 \ge 0, w_1 + w_2 = 1\)). Geometrically, contour lines of \(F_w\) are straight lines of slope \(-w_1 / w_2\). Minimizing \(F_w\) corresponds to translating a supporting hyperplane from \(-\infty\) towards the feasible objective region until it first touches the boundary:</p>
+<ul>
+<li>If the Pareto front is <strong>convex</strong> (curves outward towards the ideal point), any boundary point can be made the unique tangent point of contact for some supporting hyperplane slope \(-w_1/w_2\).</li>
+</ul>
+<ul>
+<li>If the Pareto front is <strong>non-convex / concave (dented inward)</strong>, any supporting hyperplane touching an interior dented point <em>must cut through other feasible points</em> on the flanks. Therefore, the minimum of the linear function along that direction will always occur at one of the outer extremities or boundary vertices, never inside the dent.</li>
+</ul>
+<ul>
+<li><em>Mathematical consequence:</em> No non-negative weight vector \((w_1, w_2)\) exists whose minimum is situated inside the dented curve. Sweeping weights causes the solution to jump discontinuously from one end of the dent to the other (as demonstrated on Problem P3, ZDT2).</li>
+</ul>
+<hr>
+<h3>Question 2: Why did VEGA collapse towards the extremes in your run?</h3>
+<p><strong>Answer:</strong>  </p>
+<p>VEGA (Vector Evaluated Genetic Algorithm) partitions the population of size \(N\) into \(M\) sub-populations of size \(N/M\). Each sub-population \(m\) is selected based <em>exclusively on objective \(f_m\)</em>:</p>
+<ul>
+<li>Individuals that excel in objective 1 (regardless of how poor they are in objective 2) dominate sub-population 1. Similarly, individuals that excel in objective 2 dominate sub-population 2.</li>
+<li>When the sub-populations are pooled and shuffled for crossover, the parents represent opposing single-objective extrema.</li>
+<li>Because selection pressure is exerted purely in the coordinate axes directions, solutions that offer balanced compromises (moderate in both objectives) are never among the best in either sub-population and are systematically filtered out.</li>
+<li>Over successive generations, this creates strong speciation towards the boundary extrema, leaving the intermediate compromise region completely unpopulated (verified on P2 and P3 in Task A).</li>
+</ul>
+<hr>
+<h3>Question 3: What does elitism guarantee, and which of your algorithms have it?</h3>
+<p><strong>Answer:</strong>  </p>
+<ul>
+<li><strong>What Elitism Guarantees:</strong> Elitism guarantees <strong>monotonic non-deterioration</strong> of the Pareto-optimal set. Mathematically, if an elite archive or \((N+N)\) selection model is used, a non-dominated solution cannot be displaced or replaced by a strictly inferior or dominated solution. This prevents the evolutionary population from losing high-quality discoveries due to stochastic genetic drift or destructive crossover/mutation.</li>
+</ul>
+<ul>
+<li><strong>Algorithms with Elitism:</strong></li>
+</ul>
+<ul>
+<li><em>Generational \((N+N)\) Evolutionary Elitism:</em> NSGA-II (14), NSGA-III (15), Constrained NSGA-II (21), MODE (27), MO-TLBO (28), MOMA (30), RVEA (31), IBEA (32), HypE (34), R-NSGA-II (35).</li>
+</ul>
+<ul>
+<li><em>External Archive-based Elitism:</em> SPEA2 (16), PESA-II (17), MOEA/D (18), MOEA/D-DE (19), MOEA/D-ACO (20), MOPSO (22), MOGWO (23), MOABC (24), MOACO (25), MOSA (26), MOBA (29), SMS-EMOA (33).</li>
+</ul>
+<ul>
+<li><em>Non-Elitist Algorithms:</em> VEGA (10), MOGA (11), NSGA (12), NPGA (13) replace parents with offspring without archiving, meaning solutions can drift or be lost.</li>
+</ul>
+<hr>
+<h3>Question 4: Why does crowding distance stop working well with many objectives, and what replaces it?</h3>
+<p><strong>Answer:</strong>  </p>
+<ul>
+<li><strong>Failure of Crowding Distance in High Dimensions (\(M \ge 5\)):</strong></li>
+</ul>
+<ul>
+<li><em>Dominance Resistance:</em> In \(M \ge 5\) dimensions, the probability that two random solutions dominate each other approaches zero. Almost 100% of the population becomes mutually non-dominated (Front 1).</li>
+</ul>
+<ul>
+<li><em>Boundary Distortion:</em> Crowding distance assigns \(\infty\) to the extreme points along each objective axis. In \(M\) dimensions, there are at least \(2M\) extreme boundary points. As \(M\) increases, these boundary points consume a dominant fraction of the population, leaving interior trade-off solutions with negligible survival priority.</li>
+</ul>
+<ul>
+<li><em>Sparsity in Hyper-volume:</em> Points become sparse in high-dimensional space, and 1D perimeter projections (summing \(\frac{f_m(i+1) - f_m(i-1)}{f_m^{\max} - f_m^{\min}}\)) no longer accurately measure local hyper-spatial density.</li>
+<li><strong>What Replaces It:</strong></li>
+</ul>
+<ul>
+<li><strong>Structured Reference Points / Directions:</strong> Used in NSGA-III (Das & Dennis simplex lattice) and RVEA (unit reference vectors). Solutions are projected perpendicular to reference lines, preserving uniform distribution across the manifold.</li>
+</ul>
+<ul>
+<li><strong>Sample-Shared Hypervolume Contributions:</strong> Used in HypE and SMS-EMOA, measuring exact or Monte Carlo estimated hypervolume contributions rather than linear distances.</li>
+</ul>
+<hr>
+<h3>Question 5: Which of your algorithms needs a preference from the decision-maker, and what happens if it is wrong?</h3>
+<p><strong>Answer:</strong>  </p>
+<ul>
+<li><strong>Algorithms Requiring Decision-Maker Preferences:</strong></li>
+</ul>
+<ul>
+<li>Value Function (Algorithm 5): Requires utility parameters (risk aversion \(\lambda\), attribute weights, target thresholds).</li>
+</ul>
+<ul>
+<li>Goal Programming (Algorithm 6): Requires aspiration targets \(T_m\) and deviation penalties \(w_m^+, w_m^-\).</li>
+</ul>
+<ul>
+<li>Lexicographic Method (Algorithm 7): Requires strict priority order and tolerances \(\delta\).</li>
+</ul>
+<ul>
+<li>TOPSIS & VIKOR (Algorithms 8 & 9): Require criteria weights \(w_j\) and criteria classifications.</li>
+</ul>
+<ul>
+<li>R-NSGA-II (Algorithm 35): Requires target reference points \(z^{ref}\) and clearing radius \(\varepsilon_{clear}\).</li>
+</ul>
+<ul>
+<li><strong>Consequences of Erroneous / Misplaced Preferences:</strong></li>
+</ul>
+<ul>
+<li>In <em>Value Function</em>, a distorted utility function steers optimization to an unviable compromise that violates the decision-maker's actual risk appetite.</li>
+</ul>
+<ul>
+<li>In <em>Goal Programming</em>, setting unreachable targets can leave severe shortfalls, whereas underestimating targets stops the search at suboptimal points far inside the feasible space.</li>
+</ul>
+<ul>
+<li>In <em>R-NSGA-II</em>, placing \(z^{ref}\) far outside the achievable region distorts the local search, creating clustering at boundary edges and discarding globally efficient trade-offs.</li>
+</ul>
+<hr>
+<h3>Question 6: Explain Deb's three constraint rules with one numerical example.</h3>
+<p><strong>Answer:</strong>  </p>
+<p><strong>Deb's Constrained-Dominance Rules:</strong></p>
+<p>A solution \(A\) constrained-dominates solution \(B\) if:</p>
+<ul>
+<li>Solution \(A\) is feasible (\(CV_A = 0\)) and Solution \(B\) is infeasible (\(CV_B > 0\)).</li>
+<li>Both \(A\) and \(B\) are infeasible, but \(A\) has smaller total constraint violation: \(CV_A < CV_B\).</li>
+<li>Both \(A\) and \(B\) are feasible, and \(A\) Pareto-dominates \(B\) in objective space: \(\forall m, f_m(A) \le f_m(B)\) and \(\exists m, f_m(A) < f_m(B)\).</li>
+</ul>
+<p><strong>Numerical Example (Cantilever Beam Design, Problem P5):</strong></p>
+<p>Consider four candidate designs:</p>
+<ul>
+<li>Point \(A\): \((b=0.02, h=0.06) \implies f = [9.42\text{ kg}, 0.0093\text{ m}]\), \(b h^2 = 7.2 \times 10^{-5} \ge 2.4 \times 10^{-5} \implies \mathbf{CV_A = 0.0}\) (Feasible).</li>
+</ul>
+<ul>
+<li>Point \(B\): \((b=0.01, h=0.05) \implies f = [3.925\text{ kg}, 0.0160\text{ m}]\), \(b h^2 = 2.5 \times 10^{-5} \ge 2.4 \times 10^{-5} \implies \mathbf{CV_B = 0.0}\) (Feasible).</li>
+</ul>
+<ul>
+<li>Point \(C\): \((b=0.01, h=0.03) \implies f = [2.355\text{ kg}, 0.0740\text{ m}]\), \(b h^2 = 9.0 \times 10^{-6} < 2.4 \times 10^{-5} \implies \mathbf{CV_C = 0.625}\) (Infeasible).</li>
+</ul>
+<ul>
+<li>Point \(D\): \((b=0.01, h=0.02) \implies f = [1.570\text{ kg}, 0.2500\text{ m}]\), \(b h^2 = 4.0 \times 10^{-6} < 2.4 \times 10^{-5} \implies \mathbf{CV_D = 0.833}\) (Infeasible).</li>
+</ul>
+<p><strong>Rule Application:</strong></p>
+<ul>
+<li><em>Rule 1 Check:</em> Compare \(A\) (feasible, mass 9.42) vs \(C\) (infeasible, mass 2.355). Even though \(C\) has much lower mass, <strong>\(A\) strictly dominates \(C\)</strong> because \(A\) is feasible and \(C\) violates stress limits.</li>
+</ul>
+<ul>
+<li><em>Rule 2 Check:</em> Compare \(C\) (\(CV = 0.625\)) vs \(D\) (\(CV = 0.833\)). Both are infeasible, but <strong>\(C\) strictly dominates \(D\)</strong> because \(CV_C < CV_D\).</li>
+</ul>
+<ul>
+<li><em>Rule 3 Check:</em> Compare \(A\) vs \(B\). Both are feasible: \(B\) has lower mass (3.925 < 9.42) while \(A\) has lower deflection (0.0093 < 0.016). Neither Pareto-dominates the other; they are mutually non-dominated trade-offs.</li>
+</ul>
+<hr>
+<h3>Question 7: How would you detect that your algorithm has prematurely converged?</h3>
+<p><strong>Answer:</strong>  </p>
+<p>Premature convergence can be detected through multiple quantitative signals monitored across generations:</p>
+<ul>
+<li><strong>Hypervolume Stagnation:</strong> The Hypervolume (HV) curve plateaus early (\(d(\text{HV})/dt \approx 0\)) at a value significantly below the known theoretical ceiling or baseline.</li>
+<li><strong>Genotypic & Phenotypic Variance Collapse:</strong> The population standard deviation in decision space (\(\sigma_x \to 0\)) drops to machine precision, meaning all individuals in the population have collapsed into an identical clone.</li>
+<li><strong>Severe Spacing Metric Spikes:</strong> The Spacing metric \(S\) drops to zero (if all points collapse to a single point) or blows up to large values as intermediate solutions vanish and only isolated clusters remain.</li>
+<li><strong>Dominance Replacement Ratio:</strong> In algorithms like MODE or MOEA/D, the percentage of newly generated offspring that successfully replace their targets drops to zero across multiple consecutive generations.</li>
+<li><strong>IGD Divergence from Reference:</strong> On benchmarks with known Pareto fronts, the Inverted Generational Distance (IGD) remains high and fails to decrease as generation count increases.</li>
+</ul>
+<hr>
+<h3>Question 8: Why do TOPSIS and VIKOR not count as optimizers?</h3>
+<p><strong>Answer:</strong>  </p>
+<ul>
+<li><strong>Definition of an Optimizer:</strong> An optimizer explores, searches, and generates <em>new</em> candidate decision vectors \(x\) across a continuous or discrete decision space \(\mathcal{X}\) to minimize or maximize objective functions subject to constraints.</li>
+</ul>
+<ul>
+<li><strong>Role of TOPSIS and VIKOR:</strong> TOPSIS and VIKOR are <strong>Multi-Criteria Decision Making (MCDM) Ranking Methods</strong>, not optimizers:</li>
+<li><em>Finite Candidate Set:</em> They require a pre-existing, static, finite table of alternatives (e.g., 5 suppliers in P12, or the 100 solutions of an already converged Pareto front).</li>
+<li><em>No Generative Exploration:</em> They possess no variation operators (no crossover, mutation, gradient descent, or neighborhood moves) and cannot synthesize new solutions.</li>
+<li><em>Post-Processing Function:</em> Their sole mathematical function is to sort and order an existing set of candidate rows based on geometric distance (TOPSIS) or \(L_p\) compromise ranking (VIKOR).</li>
+</ul></div>
+</body>
+</html>

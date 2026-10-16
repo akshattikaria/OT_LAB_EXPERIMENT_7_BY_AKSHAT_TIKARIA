@@ -1,0 +1,2 @@
+TOPSIS_Top3,TOPSIS_Shifted_Top3,TOPSIS_Rank_Flipped,VIKOR_Top3,VIKOR_Shifted_Top3,VIKOR_Rank_Flipped,Condition_1_Advantage,Condition_2_Stability
+"[19, 5, 16]","[5, 19, 11]",True,"[23, 6, 4]","[4, 7, 6]",True,False,True

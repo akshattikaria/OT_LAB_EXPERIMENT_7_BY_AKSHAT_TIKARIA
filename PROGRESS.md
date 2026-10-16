@@ -1,0 +1,60 @@
+# PROGRESS — OT Lab Assignment 7
+
+Student: Akshat Tikaria, Roll 241070005
+
+Safety rules active: only edit inside project folder; move files to _old/ before deleting; no pip install.
+
+---
+
+## Checklist
+
+- [x] **S1** METRICS — add METRIC_SPEC + compute_metrics to moo_utils.py; unit tests
+- [x] **S2** BUDGET — CountingProblem, experiments/budget.py, experiments/check_budget.py
+- [x] **S3a** alg02 epsilon-constraint payoff table fix
+- [x] **S3b** alg03 Benson reference point fix
+- [x] **S3c** alg14 NSGA-II use_constraints=False
+- [x] **S3d** alg28 MO-TLBO teacher selection fix
+- [x] **S3e** alg29 MOBA 5 bug fixes
+- [x] **S3f** alg17 PESA-II docstring note (core unchanged)
+- [x] **S3g** alg30 MOMA + P9 precompute optimization
+- [x] **S3h** alg19 MOEA/D-DE on P5 (fix only if still fails after S2)
+- [x] **S3i** algs 5,6,7,36,37,8,9 log N/A metrics
+- [x] **S4** STATUS — experiments/status.py; replace hard-coded status in run_task_a.py
+- [x] **S5a** p13_network.py (MTL network with forward/backward/grad-check)
+- [x] **S5b** P8 coordinates saved to results/data/p8_coords.csv + problem_bank.md
+- [ ] **S6** HAND TRACES — ScriptedRNG, full MOBA+PESA-II 2-iteration trace with ASSERTs
+- [ ] **S7** EXPERIMENTS — full re-run, multiprocessing, smoke test first
+- [ ] **S8** REPORT — build_claims.py, rebuild all .md from CSVs, fix M.Tech→B.Tech
+- [ ] **S9** PACKAGING — new code.zip, raw_results.zip, report.pdf
+- [ ] **S10** FINAL AUDIT — audit_final.py
+- [ ] **S12** FINISH — summary paragraph
+
+---
+
+## Log
+
+| Step | Status | Result |
+|------|--------|--------|
+| INIT | ✅ DONE | MASTER_PLAN.md created, PROGRESS.md created, safety rules acknowledged |
+| S1 | ✅ DONE | All unit tests in test_moo_utils.py passed (P3 HV=0.54233, (0,1) HV=0.11000, IGD=0, non-dom HV non-decreasing). 0 normalize_objectives calls in experiments/. ref_union_P8.csv generated. |
+| S2 | ✅ DONE | CountingProblem + experiments/budget.py + experiments/check_budget.py passed 100% (all 26 stochastic algorithms in [9000, 10100], unbudgeted algorithms accurately logged). |
+| S3a | ✅ DONE | Payoff table + lexicographic f1-minimizer fixed alg02; P3 25/25 points within 0.02 of f2=1-f1^2; P1 and P2 25 distinct points. |
+| S3b | ✅ DONE | Dominated reference points spread along front fixed alg03; P1 14 distinct (100% f1 coverage); P7 25 distinct (100% f1 coverage). |
+| S3c | ✅ DONE | Added use_constraints=False to alg14; verified on P5 alg14 returned 50/100 CV>0 points while alg21 returned 0/100. |
+| S3d | ✅ DONE | Fixed MO-TLBO teacher selection; P3 at 10k evals gave 99 unique points (target >=20) and HV=0.53738 (target >=0.45). |
+| S3e | ✅ DONE | MOBA 5 bug fixes passed: P3 unique=100 (>=30), HV=0.50702 (>=0.45), time=16.54s (<=30s); P4 HV=0.96059, time=23.90s (<=60s). |
+| S3f | ✅ DONE | Added PESA-II docstring note; P3 at 10k evals verified: unique=97 (>=50), HV=0.52432 (>=0.50), IGD=0.01129, time=13.47s. |
+| S3g | ✅ DONE | ProblemP9 evaluate optimized (4.88 ms uncached, <=5 ms); MOMA on P9 at 10k evals ran in 2.76 s (<=120 s). |
+| S3h | ✅ DONE | Fixed MOEA/D-DE scale collapse via normalized Tchebycheff; P5 at 10k evals gave 81 unique feasible points (target >=15) in 2.42 s. |
+| S3i | ✅ DONE | Single-solution (5,6,7,36,37) and ranking (8,9) algorithms configured to log HV/IGD/Spacing as N/A with explicit Preference_Input. |
+| S4 | ✅ DONE | experiments/status.py implemented and wired into run_task_a.py; rigorous quantitative criteria + measured reasons verified on synthetic & live runs. |
+| S5a | ✅ DONE | p13_network.py created (NumPy MTL net: BCE+MSE, analytical backprop, grad check error 3.5e-7 < 1e-5; Equal vs MGDA vs GradNorm on standard and 100x imbalance saved to CSV and figure). |
+| S5b | ✅ DONE | ProblemP8 coordinates generated under seed 7, saved to results/data/p8_coords.csv, table documented in report/problem_bank.md. |
+
+
+
+
+
+
+
+

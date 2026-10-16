@@ -1,0 +1,7 @@
+Scenario,Task2_Scale,Algorithm,Final_Loss1_BCE,Final_Loss2_MSE,Final_Weight_Task1,Final_Weight_Task2
+standard,1.0,EQUAL,0.44181,0.24828,0.5,0.5
+standard,1.0,MGDA,0.45102,0.24192,0.3361,0.6639
+standard,1.0,GRADNORM,0.31968,0.31192,1.9901,0.0099
+imbalanced_100x,100.0,EQUAL,0.74187,1.41318,0.5,0.5
+imbalanced_100x,100.0,MGDA,0.69791,27.07219,1.0,0.0
+imbalanced_100x,100.0,GRADNORM,0.7046,10.12289,1.9901,0.0099
