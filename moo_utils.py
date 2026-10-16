@@ -769,15 +769,31 @@ class ProblemP5(BaseProblem):
         return np.array([f1, f2]), cv
 
     def true_pareto_front(self, n_points: int = 100) -> np.ndarray:
-        # Pareto front occurs along active constraint b * h^2 = 2.4e-5
-        h_vals = np.linspace(self.xl[1], self.xu[1], n_points)
-        b_vals = self.bh2_min / (h_vals ** 2)
-        valid = (b_vals >= self.xl[0]) & (b_vals <= self.xu[0])
-        h_vals = h_vals[valid]
-        b_vals = b_vals[valid]
+        n1 = n_points // 2
+        n2 = n_points - n1
+
+        h_min = max(self.xl[1], np.sqrt(self.bh2_min / self.xl[0]))
+
+        # Curve 1: b = 0.01, h in [h_min, 0.20]
+        h1 = np.linspace(h_min, self.xu[1], n1)
+        b1 = np.full(n1, self.xl[0])
+
+        # Curve 2: h = 0.20, b in [0.01, 0.10]
+        b2 = np.linspace(self.xl[0], self.xu[0], n2)
+        h2 = np.full(n2, self.xu[1])
+
+        b_vals = np.concatenate([b1, b2])
+        h_vals = np.concatenate([h1, h2])
+
         f1 = self.rho * self.L * b_vals * h_vals
         f2 = (4.0 * self.P * (self.L ** 3)) / (self.E * b_vals * (h_vals ** 3))
-        return np.column_stack([f1, f2])
+
+        pts = np.column_stack([f1, f2])
+        # Sort and return unique/non-dominated
+        pts = pts[np.argsort(pts[:, 0])]
+        _, unique_idx = np.unique(pts[:, 0], return_index=True)
+        pts = pts[np.sort(unique_idx)]
+        return pts
 
 
 # --- P6: Binh-Korn constrained benchmark ---
