@@ -17,13 +17,7 @@
 - **Core Idea (<= 5 Lines):**
   > Directly models the Decision-Maker's (DM) risk attitude and trade-off rate into an explicit mathematical utility function $U(f_1(x), \dots, f_M(x))$. By maximizing $U(f(x))$ subject to operational constraints, the optimization search pinpoints the unique compromise solution that yields maximum personal satisfaction to the decision maker without needing an entire Pareto front.
 
-```mermaid
-flowchart TD
-    A["Elicit DM Preferences (Risk Aversion lambda, Targets z*)"] --> B["Formulate Scalar Utility Function U(f(x))"]
-    B --> C["Formulate Single-Objective Problem: min -U(f(x)) + Penalty*CV"]
-    C --> D["Solve via Non-Linear Optimizer (SLSQP / L-BFGS-B)"]
-    D --> E["Output Optimal Decision x* & Maximized Utility U*"]
-```
+![Algorithm 05 Flowchart](../results/figures/flowchart_alg05_value_function.png)
 
 #### Numbered Steps with Formulas
 1. **Utility Function Elicitation:**
@@ -79,13 +73,12 @@ flowchart TD
 ---
 
 ### 1.3 Parameter Sensitivity Study (10 Independent Seeds)
-We evaluate $\lambda_{risk} \in \{0.5, 5.0, 50.0\}$ across 10 random starting points:
-- $\lambda = 0.5$: Mean Risk = $0.09000 \pm 0.0000$, Mean Return = $0.15000 \pm 0.0000$ (Converges strictly to Asset 3).
-- $\lambda = 5.0$: Mean Risk = $0.01524 \pm 0.0001$, Mean Return = $0.11860 \pm 0.0002$ (Balanced diversification).
-- $\lambda = 50.0$: Mean Risk = $0.00712 \pm 0.0000$, Mean Return = $0.08640 \pm 0.0001$ (Minimum variance portfolio).
+We evaluate risk aversion $\lambda_{risk} \in \{0.5, 5.0, 50.0\}$ across 10 random starting seeds on Markowitz portfolio P4:
+- $\lambda = 0.5$ (Risk-Tolerant): Mean Risk = $0.0607 \pm 0.0001$, Mean Return = $0.1439 \pm 0.0000$, Mean Utility = $0.1287 \pm 0.0000$ (`task_c_sensitivity.csv`). Focuses capital heavily on high-return Asset 3.
+- $\lambda = 5.0$ (Balanced Investor): Mean Risk = $0.0100 \pm 0.0000$, Mean Return = $0.1074 \pm 0.0000$, Mean Utility = $0.0825 \pm 0.0000$. Delivers robust diversification across assets.
+- $\lambda = 50.0$ (Risk-Averse): Mean Risk = $0.0071 \pm 0.0000$, Mean Return = $0.0942 \pm 0.0000$, Mean Utility = $-0.0826 \pm 0.0000$. Converges strictly to the minimum variance portfolio.
 - *Plot:* Illustrated in `results/figures/task_c_sensitivity_alg05.png`.
 
----
 
 ## 2. Deep Dive: Algorithm 17 — PESA-II
 
@@ -96,14 +89,7 @@ We evaluate $\lambda_{risk} \in \{0.5, 5.0, 50.0\}$ across 10 random starting po
 - **Core Idea (<= 5 Lines):**
   > Replaces individual selection with Region-Based Selection on an external hyperbox grid: binary tournament selection chooses between two non-empty hyperboxes (the box with the smaller squeeze factor wins), and then picks a single individual uniformly from the winning box. This ensures sparse regions are sampled just as frequently as dense regions.
 
-```mermaid
-flowchart TD
-    A["Discretize Objective Space into K^M Hyperboxes"] --> B["Map Archive Members into Grid Boxes & Count Squeeze Factor"]
-    B --> C["Region Tournament: Pick 2 Non-Empty Boxes; Lower Squeeze Factor Wins"]
-    C --> D["Uniformly Pick One Parent from Winning Box"]
-    D --> E["Perform SBX Crossover & Polynomial Mutation to Create Offspring"]
-    E --> F["Update Archive: Replace Dominated Members; Prune Most Crowded Box if Full"]
-```
+![Algorithm 17 Flowchart](../results/figures/flowchart_alg17_pesa2.png)
 
 #### Numbered Steps with Formulas
 1. **Grid Discretization:**
@@ -138,45 +124,88 @@ flowchart TD
 
 ---
 
-### 2.2 Hand Trace on Tiny Instance (Problem P1: $N=4, N_{arc}=4, K=4$)
-**Instance:** Initial points $x = [2.0, 4.0, 6.0, 8.0]$. $f_1 = (x-3)^2, f_2 = (x-7)^2$.
+### 2.2 Hand Trace on Tiny Instance (Problem P1: $N_{\text{arc}}=3, K=4$)
+**Instance:** Problem P1 ($f_1(x) = (x-3)^2, f_2(x) = (x-7)^2$, $x \in [1, 10]$).  
+Archive capacity $N_{\text{arc}} = 3$, Grid divisions $K = 4$.
 
 #### Iteration 0: Initial State
-- $x^{(1)} = 2.0 \implies f = [1.0, 25.0]$ (Dominated by $x=4.0$: $f=[1.0, 9.0]$).
-- $x^{(2)} = 4.0 \implies f = [1.0, 9.0]$.
-- $x^{(3)} = 6.0 \implies f = [9.0, 1.0]$.
-- $x^{(4)} = 8.0 \implies f = [25.0, 1.0]$ (Dominated by $x=6.0$: $f=[9.0, 1.0]$).
-- Initial Non-dominated Archive: $\{x=4.0, x=6.0\}$.
-- $f^{\min} = [1.0, 1.0]$, $f^{\max} = [9.0, 9.0]$, Range = $[8.0, 8.0]$.
-- Box coordinates ($K=4$, grid step = 2.0):
-  - $x=4.0: f=[1.0, 9.0] \implies \text{box} = (\lfloor 0/2 \rfloor, \min(3, \lfloor 8/2 \rfloor)) = (0, 3)$. $\text{sq}(0, 3) = 1$.
-  - $x=6.0: f=[9.0, 1.0] \implies \text{box} = (3, 0)$. $\text{sq}(3, 0) = 1$.
+Initial archive seeded with 3 mutually non-dominated points:
+- $x^{(0)} = 4.0 \implies f = [1.0, 9.0]$
+- $x^{(1)} = 6.0 \implies f = [9.0, 1.0]$
+- $x^{(2)} = 5.0 \implies f = [4.0, 4.0]$
 
-#### Iteration 1: Offspring $c_1$ at $x = 5.0$
-- $f(c_1) = [(5-3)^2, (5-7)^2] = [4.0, 4.0]$.
-- Dominance test: $[4, 4]$ does not dominate $[1, 9]$ or $[9, 1]$, nor is it dominated.
-- Insert $c_1$ into Archive: $\{[1, 9], [9, 1], [4, 4]\}$ (Size = 3, fits without pruning).
-- Box coordinate for $[4, 4]$:
-  $\text{box}_1 = \lfloor 4 \cdot (4-1)/8 \rfloor = \lfloor 1.5 \rfloor = 1$.
-  $\text{box}_2 = \lfloor 4 \cdot (4-1)/8 \rfloor = \lfloor 1.5 \rfloor = 1$.
-- Updated boxes: $(0, 3): 1$, $(3, 0): 1$, $(1, 1): 1$.
+Grid bounds: $f^{\min} = [1.0, 1.0]$, $f^{\max} = [9.0, 9.0]$, $\Delta f = [8.0, 8.0]$.  
+Grid step per objective: $\Delta f / K = 8.0 / 4 = 2.0$.  
+Hyperbox assignment rule: $\text{box}_m = \min(3, \max(0, \lfloor 4 \cdot (f_m - 1.0)/8.0 \rfloor))$.
+- $x^{(0)} = 4.0: f=[1.0, 9.0] \implies \text{box} = (\lfloor 0/2 \rfloor, \min(3, \lfloor 8/2 \rfloor)) = (0, 3)$, $\text{sq}(0, 3) = 1$.
+- $x^{(1)} = 6.0: f=[9.0, 1.0] \implies \text{box} = (\min(3, \lfloor 8/2 \rfloor), \lfloor 0/2 \rfloor) = (3, 0)$, $\text{sq}(3, 0) = 1$.
+- $x^{(2)} = 5.0: f=[4.0, 4.0] \implies \text{box} = (\lfloor 3/2 \rfloor, \lfloor 3/2 \rfloor) = (1, 1)$, $\text{sq}(1, 1) = 1$.
 
-#### Iteration 2: Offspring $c_2$ at $x = 3.5$
-- $f(c_2) = [(3.5-3)^2, (3.5-7)^2] = [0.25, 12.25]$.
-- Bounds update: $f^{\min} = [0.25, 1.00]$, $f^{\max} = [9.00, 12.25]$.
-- Insert $c_2$ into Archive: Archive now has 4 members $\{[0.25, 12.25], [1, 9], [4, 4], [9, 1]\}$.
-- Capacity $N_{arc} = 4$ satisfied.
-- *Code reproduction:* Exact match confirmed by `experiments/run_task_c.py`.
+#### Iteration 1:
+1. **Region-Based Parent Selection:**
+   - Non-empty boxes: $\mathcal{B} = \{(0, 3), (3, 0), (1, 1)\}$, all with squeeze factor 1.
+   - Parent 1: Region tournament samples boxes $(0, 3)$ and $(1, 1)$. Squeeze tie broken $\implies$ box $(0, 3)$ wins. Individual chosen uniformly from box $(0, 3)$ is $P_1 = [4.0]$.
+   - Parent 2: Region tournament samples boxes $(3, 0)$ and $(1, 1)$. Squeeze tie broken $\implies$ box $(1, 1)$ wins. Individual chosen uniformly from box $(1, 1)$ is $P_2 = [5.0]$.
+2. **Recombination & Mutation:**
+   - SBX crossover ($\eta_c = 20, p_c = 0.9$): $y_1 = 4.0, y_2 = 5.0, \Delta y = 1.0$.  
+     $\beta = 1 + 2(4-1)/1 = 7.0, \alpha = 2 - 7^{-21} \approx 2.0$.  
+     With $\text{rand} = 0.5 \times 0.6^{21} \approx 1.0968 \times 10^{-5}$, $\beta_q = (2 \cdot \text{rand})^{1/21} = 0.60$.  
+     $c_1 = 0.5 \times (4.0 + 5.0 - 0.60 \times 1.0) = \mathbf{4.20}$.
+   - Polynomial mutation ($\eta_m = 20, p_m = 1.0$): at median draw $\text{rand} = 0.5$, perturbation factor $\delta_q = 0.0$, yielding offspring $c_1 = \mathbf{4.20}$.
+3. **Objective Evaluation:**
+   - $f_1(4.2) = (4.2 - 3.0)^2 = 1.2^2 = \mathbf{1.44}$.
+   - $f_2(4.2) = (4.2 - 7.0)^2 = (-2.8)^2 = \mathbf{7.84}$.
+   - $c_1$ is non-dominated by all archive members; added to archive.
+4. **Archive Capacity & Most-Crowded Removal:**
+   - Archive temporarily contains 4 individuals: $\{x=4.0, 6.0, 5.0, 4.2\}$.
+   - Re-evaluate hyperboxes on updated archive ($f^{\min} = [1.0, 1.0], f^{\max} = [9.0, 9.0]$):
+     $x = 4.2 \implies f=[1.44, 7.84] \implies \text{box} = (\lfloor 4 \times 0.44/8 \rfloor, \lfloor 4 \times 6.84/8 \rfloor) = (0, 3)$.
+   - Updated squeeze factors:
+     - Box $(0, 3)$: squeeze factor = **2** (contains $x=4.0$ and $x=4.2$).
+     - Box $(3, 0)$: squeeze factor = 1 (contains $x=6.0$).
+     - Box $(1, 1)$: squeeze factor = 1 (contains $x=5.0$).
+   - Capacity $N_{\text{arc}} = 3$ exceeded ($4 > 3$). Most-crowded box is uniquely $(0, 3)$ ($\text{sq} = 2$).
+   - Individual $x=4.0$ is selected from box $(0, 3)$ and pruned.
+   - Archive after Iteration 1: $\{x=6.0, 5.0, 4.2\}$ with $F = [[9.0, 1.0], [4.0, 4.0], [1.44, 7.84]]$, all $\text{sq} = 1$.
+
+#### Iteration 2:
+1. **Region-Based Parent Selection:**
+   - Non-empty boxes: $\{(3, 0), (1, 1), (0, 3)\}$, each with squeeze factor 1.
+   - Parent 1 selected from box $(1, 1) \implies P_1 = [5.0]$.
+   - Parent 2 selected from box $(3, 0) \implies P_2 = [6.0]$.
+2. **Recombination & Mutation:**
+   - SBX crossover on $y_1 = 5.0, y_2 = 6.0$ with $\beta_q = 0.80$ ($\text{rand} = 0.5 \times 0.8^{21} \approx 4.6117 \times 10^{-3}$):  
+     $c_2 = 0.5 \times (5.0 + 6.0 - 0.80 \times 1.0) = \mathbf{5.10}$.
+   - Polynomial mutation at $\text{rand} = 0.5 \implies \delta_q = 0.0 \implies c_2 = \mathbf{5.10}$.
+3. **Objective Evaluation:**
+   - $f_1(5.1) = (5.1 - 3.0)^2 = 2.1^2 = \mathbf{4.41}$.
+   - $f_2(5.1) = (5.1 - 7.0)^2 = (-1.9)^2 = \mathbf{3.61}$.
+   - $c_2$ is non-dominated; added to archive.
+4. **Archive Capacity & Most-Crowded Removal:**
+   - Archive temporarily contains 4 individuals: $\{x=6.0, 5.0, 4.2, 5.1\}$.
+   - Dynamic bounds: $f^{\min} = [1.44, 1.00], f^{\max} = [9.00, 7.84]$.
+     $x = 5.0: f=[4.00, 4.00] \implies \text{box} = (\lfloor 4 \times 2.56/7.56 \rfloor, \lfloor 4 \times 3.00/6.84 \rfloor) = (1, 1)$.  
+     $x = 5.1: f=[4.41, 3.61] \implies \text{box} = (\lfloor 4 \times 2.97/7.56 \rfloor, \lfloor 4 \times 2.61/6.84 \rfloor) = (1, 1)$.
+   - Updated squeeze factors:
+     - Box $(3, 0)$: squeeze factor = 1 (contains $x=6.0$).
+     - Box $(0, 3)$: squeeze factor = 1 (contains $x=4.2$).
+     - Box $(1, 1)$: squeeze factor = **2** (contains $x=5.0$ and $x=5.1$).
+   - Most-crowded box is uniquely $(1, 1)$ ($\text{sq} = 2$). Individual $x=5.0$ is pruned.
+   - Archive after Iteration 2: $\{x=6.0, 4.2, 5.1\}$ with $F = [[9.00, 1.00], [1.44, 7.84], [4.41, 3.61]]$, all $\text{sq} = 1$.
+- *Code reproduction:* Exact match asserted in `results/data/task_c_trace_check.csv` (all differences $< 10^{-9}$).
 
 ---
 
 ### 2.3 Parameter Sensitivity Study (10 Independent Seeds)
-Evaluated on Problem P3 (ZDT2 non-convex benchmark) across $K \in \{5, 10, 20\}$:
-- $K = 5$: $\text{IGD} = 0.0482 \pm 0.0034$, $\text{Spacing} = 0.0162 \pm 0.0021$, $\text{HV} = 0.884 \pm 0.006$.
-- $K = 10$: $\text{IGD} = \mathbf{0.0241 \pm 0.0018}$, $\text{Spacing} = \mathbf{0.0105 \pm 0.0011}$, $\text{HV} = \mathbf{0.912 \pm 0.004}$.
-- $K = 20$: $\text{IGD} = 0.0289 \pm 0.0022$, $\text{Spacing} = 0.0124 \pm 0.0015$, $\text{HV} = 0.905 \pm 0.005$.
-- *Analysis:* $K = 10$ provides the optimal trade-off between grid resolution and squeeze factor contrast. Setting $K=5$ merges diverse solutions into identical boxes, while $K=20$ dilutes the squeeze factor signal.
+Evaluated on Problem P3 (ZDT2 non-convex benchmark) across grid division resolutions $K \in \{5, 10, 20\}$ across 10 independent random seeds:
+- $K = 5$ (Coarse Grid): $\text{IGD} = 1.0051 \pm 0.2297$, $\text{HV} = 0.0000 \pm 0.0000$ (`task_c_sensitivity.csv`).
+- $K = 10$ (Balanced Grid): $\text{IGD} = 1.0232 \pm 0.2331$, $\text{HV} = 0.0000 \pm 0.0000$.
+- $K = 20$ (Fine Grid): $\text{IGD} = 0.9302 \pm 0.2225$, $\text{HV} = 0.0000 \pm 0.0000$.
+- *Analysis:* Grid division $K = 20$ achieves the lowest average distance to the Pareto front ($\text{IGD} = 0.9302$) by providing finer discrimination between closely spaced candidate solutions. Setting $K=5$ merges diverse solutions into identical hyperboxes, blunting regional tournament selection.
 - *Plot:* Illustrated in `results/figures/task_c_sensitivity_alg17.png`.
+
+---
+
 
 ---
 
@@ -189,21 +218,7 @@ Evaluated on Problem P3 (ZDT2 non-convex benchmark) across $K \in \{5, 10, 20\}$
 - **Core Idea (<= 5 Lines):**
   > Emulates microbats foraging via echolocation: each bat adjusts its pulse frequency and velocity towards a guide solution $x_*$ drawn from an external Pareto archive. When pulse rate criteria are met, bats perform local random walks scaled by acoustic loudness $A$. Successful moves decay loudness and elevate pulse rate $r$, transitioning the swarm from broad exploration to intense local refinement.
 
-```mermaid
-flowchart TD
-    A["Initialize Bats: Positions x_i, Velocities v_i=0, Loudness A_i, Pulse Rate r_i"] --> B["Select Guide x* from External Pareto Archive via Crowding"]
-    B --> C["Update Frequency f_i, Velocity v_i, and Position x_i"]
-    C --> D{"rand > r_i ?"}
-    D -- Yes --> E["Perform Local Random Walk: x_cand = x* + eps * A_mean"]
-    D -- No --> F["Retain Global Position: x_cand = x_i"]
-    E --> G["Evaluate Objectives & Check Constraint Feasibility"]
-    F --> G
-    G --> H{"x_cand Dominates or rand < A_i ?"}
-    H -- Yes --> I["Accept: x_i = x_cand; Decay Loudness A_i = alpha*A_i; Elevate Pulse Rate r_i"]
-    H -- No --> J["Reject Position Update"]
-    I --> K["Update External Pareto Archive & Prune"]
-    J --> K
-```
+![Algorithm 29 Flowchart](../results/figures/flowchart_alg29_moba.png)
 
 #### Numbered Steps with Formulas
 1. **Frequency & Velocity Update:**
@@ -239,40 +254,84 @@ flowchart TD
 
 ---
 
-### 3.2 Hand Trace on Tiny Instance (Problem P1: $N=4$ Bats)
-**Instance:** Problem P1 ($1 \le x \le 10$), $f_{\min} = 0.0, f_{\max} = 2.0, A_0 = 0.9, r_0 = 0.1, \alpha = 0.95, \gamma = 0.05$.  
-Initial bat positions: $x = [2.0, 4.0, 6.0, 8.0]^T$, $v = [0, 0, 0, 0]^T$.
+### 3.2 Hand Trace on Tiny Instance (Problem P1: $N=4$ Bats, 2 Iterations)
+**Instance:** Problem P1 ($f_1(x) = (x-3)^2, f_2(x) = (x-7)^2$, $x \in [1, 10]$).  
+Parameters: $f_{\min} = 0.0, f_{\max} = 1.0, A_0 = 0.90, r_0 = 0.10, \alpha = 0.95, \gamma = 0.05, N_{\text{arc}} = 4$.  
+Initial positions: $X^{(0)} = [2.0, 4.0, 6.0, 8.0]^T$, Initial velocities: $V^{(0)} = [0.0, 0.0, 0.0, 0.0]^T$.  
+Initial non-dominated archive: $\text{Arc} = \{x_1 = 4.0, x_2 = 6.0\}$ with $F = [[1.0, 9.0], [9.0, 1.0]]$.
 
-#### Iteration 0: Initial State
-- Bat 1: $x_1 = 2.0 \implies f = [1.0, 25.0]$.
-- Bat 2: $x_2 = 4.0 \implies f = [1.0, 9.0]$.
-- Bat 3: $x_3 = 6.0 \implies f = [9.0, 1.0]$.
-- Bat 4: $x_4 = 8.0 \implies f = [25.0, 1.0]$.
-- Archive contains non-dominated bats $\{x_2=4.0, x_3=6.0\}$. Guide bat selected: $x_* = 4.0$.
+Velocity clamp limit: $v_{\text{range}} = 0.2 \times (10.0 - 1.0) = 1.80$.
 
 #### Iteration 1:
-- Bat 1 draws $\beta = 0.50 \implies f_1 = 0.0 + 2.0(0.50) = 1.00$.
-  $v_1 = 0 + (2.0 - 4.0)(1.00) = -2.00$.
-  $x_1^{\text{new}} = 2.0 + (-2.0) = 0.0 \to \text{clamped to } 1.0$.
-  $f(1.0) = [4.0, 36.0]$.
-- Bat 3 draws $\beta = 0.25 \implies f_3 = 0.50$.
-  $v_3 = 0 + (6.0 - 4.0)(0.50) = 1.00$.
-  $x_3^{\text{new}} = 6.0 + 1.0 = 7.0$.
-  $f(7.0) = [16.0, 0.0]$.
-  Dominance check: $[16.0, 0.0]$ is non-dominated; added to Archive.
-  Bat 3 updates loudness: $A_3 = 0.90 \times 0.95 = \mathbf{0.8550}$.
-  Pulse rate: $r_3 = 0.10 \times [1 - \exp(-0.05 \times 1)] = 0.10 \times (1 - 0.9512) = \mathbf{0.00488}$.
+- **Bat 0 ($X_0 = 2.0, V_0 = 0.0$):**
+  - Guide $x_* = 4.0$ (from archive). $\beta = 0.50 \implies \text{freq} = 0.0 + 1.0(0.50) = 0.50$.
+  - $V_0 = 0.5(0.0) + (4.0 - 2.0)(0.50) = \mathbf{1.00}$. (Within $[-1.8, 1.8]$).
+  - $X_0 = 2.0 + 1.00 = \mathbf{3.00} \implies f = [0.00, 16.00]$.
+  - Acceptance: accepted $\implies A_0 = 0.90 \times 0.95 = \mathbf{0.8550}$, $r_0 = 0.10 \times (1 - e^{-0.05 \times 1}) = \mathbf{0.004877}$.
+- **Bat 1 ($X_1 = 4.0, V_1 = 0.0$):**
+  - Guide $x_* = 6.0$. $\beta = 0.40 \implies \text{freq} = 0.40$.
+  - $V_1 = 0.5(0.0) + (6.0 - 4.0)(0.40) = \mathbf{0.80}$.
+  - $X_1 = 4.0 + 0.80 = \mathbf{4.80} \implies f = [3.24, 4.84]$.
+  - Acceptance: accepted $\implies A_1 = \mathbf{0.8550}$, $r_1 = \mathbf{0.004877}$.
+- **Bat 2 ($X_2 = 6.0, V_2 = 0.0$):**
+  - Guide $x_* = 4.0$. $\beta = 0.30 \implies \text{freq} = 0.30$.
+  - $V_2 = 0.5(0.0) + (4.0 - 6.0)(0.30) = \mathbf{-0.60}$.
+  - $X_2 = 6.0 - 0.60 = \mathbf{5.40} \implies f = [5.76, 2.56]$.
+  - Acceptance: accepted $\implies A_2 = \mathbf{0.8550}$, $r_2 = \mathbf{0.004877}$.
+- **Bat 3 ($X_3 = 8.0, V_3 = 0.0$):**
+  - Guide $x_* = 6.0$. $\beta = 0.50 \implies \text{freq} = 0.50$.
+  - $V_3 = 0.5(0.0) + (6.0 - 8.0)(0.50) = \mathbf{-1.00}$.
+  - $X_3 = 8.0 - 1.00 = \mathbf{7.00} \implies f = [16.00, 0.00]$.
+  - Acceptance: accepted $\implies A_3 = \mathbf{0.8550}$, $r_3 = \mathbf{0.004877}$.
+- **Archive Update (Iteration 1):**
+  Combined pool: $\{4.0, 6.0\} \cup \{3.0, 4.8, 5.4, 7.0\}$. All 6 solutions are mutually non-dominated.
+  Crowding distance truncation retains the boundary points $\{3.0, 7.0\}$ ($\text{CD} = \infty$) and the two most isolated interior points $\{4.0, 6.0\}$.
+  $\text{Arc} = \{x = 3.0, 7.0, 4.0, 6.0\}$.
 
 #### Iteration 2:
-- Bats continue updating with decayed loudness $A = 0.8550 \times 0.95 = \mathbf{0.81225}$ and $r(2) = 0.10 \times [1 - \exp(-0.10)] = \mathbf{0.00952}$.
-- Swarm contracts towards the Pareto set $[3.0, 7.0]$.
-- *Code reproduction:* Numbers match exact simulation log from `experiments/run_task_c.py`.
+- **Bat 0 ($X_0 = 3.0, V_0 = 1.0$):**
+  - Guide $x_* = 3.0$. $\beta = 0.40 \implies \text{freq} = 0.40$.
+  - $V_0 = 0.5(1.00) + (3.0 - 3.0)(0.40) = \mathbf{0.50}$.
+  - $X_0 = 3.0 + 0.50 = \mathbf{3.50} \implies f = [0.25, 12.25]$.
+  - Acceptance: accepted $\implies A_0 = 0.8550 \times 0.95 = \mathbf{0.81225}$, $r_0 = 0.10 \times (1 - e^{-0.05 \times 2}) = \mathbf{0.009516}$.
+- **Bat 1 ($X_1 = 4.8, V_1 = 0.8$):**
+  - Guide $x_* = 7.0$. $\beta = 0.30 \implies \text{freq} = 0.30$.
+  - $V_1 = 0.5(0.80) + (7.0 - 4.8)(0.30) = 0.40 + 0.66 = \mathbf{1.06}$.
+  - $X_1 = 4.8 + 1.06 = \mathbf{5.86} \implies f = [8.1796, 1.2996]$.
+  - Acceptance: accepted $\implies A_1 = \mathbf{0.81225}$, $r_1 = \mathbf{0.009516}$.
+- **Bat 2 ($X_2 = 5.4, V_2 = -0.6$):**
+  - Guide $x_* = 4.0$. $\beta = 0.50 \implies \text{freq} = 0.50$.
+  - $V_2 = 0.5(-0.60) + (4.0 - 5.4)(0.50) = -0.30 - 0.70 = \mathbf{-1.00}$.
+  - $X_2 = 5.4 - 1.00 = \mathbf{4.40} \implies f = [1.96, 6.76]$.
+  - Acceptance: accepted $\implies A_2 = \mathbf{0.81225}$, $r_2 = \mathbf{0.009516}$.
+- **Bat 3 ($X_3 = 7.0, V_3 = -1.0$):**
+  - Guide $x_* = 6.0$. $\beta = 0.40 \implies \text{freq} = 0.40$.
+  - $V_3 = 0.5(-1.00) + (6.0 - 7.0)(0.40) = -0.50 - 0.40 = \mathbf{-0.90}$.
+  - $X_3 = 7.0 - 0.90 = \mathbf{6.10} \implies f = [9.61, 0.81]$.
+  - Acceptance: accepted $\implies A_3 = \mathbf{0.81225}$, $r_3 = \mathbf{0.009516}$.
+- **Archive Update (Iteration 2):**
+  Combined pool: $\{3.0, 7.0, 4.0, 6.0\} \cup \{3.5, 5.86, 4.4, 6.1\}$.
+  Crowding distance truncation retains $\{3.0, 7.0, 4.4, 5.86\}$.
+
+#### Complete Multi-Bat Trace Verification Table
+| Iteration | Bat | Guide $x_*$ | $\beta$ | Freq | Velocity $V$ | Position $X$ | $f_1$ | $f_2$ | Loudness $A$ | Pulse Rate $r$ |
+|:---------:|:---:|:-----------:|:-------:|:----:|:------------:|:------------:|:-----:|:-----:|:------------:|:--------------:|
+| 1 | 0 | 4.00 | 0.50 | 0.50 | +1.0000 | 3.0000 | 0.0000 | 16.0000 | 0.85500 | 0.004877 |
+| 1 | 1 | 6.00 | 0.40 | 0.40 | +0.8000 | 4.8000 | 3.2400 | 4.8400 | 0.85500 | 0.004877 |
+| 1 | 2 | 4.00 | 0.30 | 0.30 | -0.6000 | 5.4000 | 5.7600 | 2.5600 | 0.85500 | 0.004877 |
+| 1 | 3 | 6.00 | 0.50 | 0.50 | -1.0000 | 7.0000 | 16.0000 | 0.0000 | 0.85500 | 0.004877 |
+| 2 | 0 | 3.00 | 0.40 | 0.40 | +0.5000 | 3.5000 | 0.2500 | 12.2500 | 0.81225 | 0.009516 |
+| 2 | 1 | 7.00 | 0.30 | 0.30 | +1.0600 | 5.8600 | 8.1796 | 1.2996 | 0.81225 | 0.009516 |
+| 2 | 2 | 4.00 | 0.50 | 0.50 | -1.0000 | 4.4000 | 1.9600 | 6.7600 | 0.81225 | 0.009516 |
+| 2 | 3 | 6.00 | 0.40 | 0.40 | -0.9000 | 6.1000 | 9.6100 | 0.8100 | 0.81225 | 0.009516 |
+
+- *Code reproduction:* All 74 variables match code execution to within $3.55 \times 10^{-15} \ll 10^{-9}$ in `results/data/task_c_trace_check.csv`.
 
 ---
 
 ### 3.3 Parameter Sensitivity Study (10 Independent Seeds)
-Evaluated on Problem P3 across $\alpha \in \{0.80, 0.95, 0.99\}$:
-- $\alpha = 0.80$ (Rapid Cooling): $\text{HV} = 0.865 \pm 0.009$, $\text{IGD} = 0.0412 \pm 0.0035$. (Freezes local walks prematurely).
-- $\alpha = 0.95$ (Standard Recommended): $\text{HV} = \mathbf{0.908 \pm 0.004}$, $\text{IGD} = \mathbf{0.0215 \pm 0.0016}$. (Optimal balance).
-- $\alpha = 0.99$ (Slow Cooling): $\text{HV} = 0.892 \pm 0.006$, $\text{IGD} = 0.0274 \pm 0.0021$. (Excessive late random perturbation).
+Evaluated on Problem P3 across loudness cooling schedules $\alpha \in \{0.80, 0.95, 0.99\}$ across 10 independent random seeds:
+- $\alpha = 0.80$ (Rapid Cooling): $\text{HV} = 0.0092 \pm 0.0276$, $\text{IGD} = 1.0192 \pm 0.3435$ (`task_c_sensitivity.csv`). Freezes local exploration prematurely as loudness decays too quickly.
+- $\alpha = 0.95$ (Standard Recommended): $\text{HV} = 0.0357 \pm 0.0661$, $\text{Spacing} = 0.0343 \pm 0.0310$, $\text{IGD} = 0.8387 \pm 0.3913$. Delivers balanced transition between global flight and local walk refinement.
+- $\alpha = 0.99$ (Slow Cooling): $\text{HV} = 0.0571 \pm 0.0767$, $\text{Spacing} = 0.0474 \pm 0.0651$, $\text{IGD} = 0.7768 \pm 0.3282$. Achieves the highest hypervolume and lowest IGD by sustaining localized random walk refinement in later iterations.
 - *Plot:* Illustrated in `results/figures/task_c_sensitivity_alg29.png`.

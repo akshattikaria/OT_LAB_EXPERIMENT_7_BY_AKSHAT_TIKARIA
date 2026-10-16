@@ -1,4 +1,4 @@
-# Random Seeds for M.Tech Optimization Techniques Lab Assignment 7
+# Random Seeds for B.Tech Optimization Techniques Lab Assignment 7
 # Roll Number: 241070005 (R = 05)
 # 10 Independent Seeds used across all experiments (Task A, Task C, Task D)
 SEED_0=42

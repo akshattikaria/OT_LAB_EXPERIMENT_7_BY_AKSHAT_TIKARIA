@@ -6,7 +6,7 @@ with open('results/data/task_a_log.csv', mode='r', encoding='utf-8') as f:
 
 md_lines = []
 md_lines.append("# Task A — Implementation Log and Unit Test Suite Summary\n")
-md_lines.append("## M.Tech Optimization Techniques · Lab Assignment 7\n")
+md_lines.append("## B.Tech Optimization Techniques · Lab Assignment 7\n")
 md_lines.append("**Author Roll Number:** 241070005 (R = 05)  ")
 md_lines.append("**Deep-Dive Algorithms:** Algorithm 5 (Value Function), Algorithm 17 (PESA-II), Algorithm 29 (MOBA)  ")
 md_lines.append("**Target Scope:** Complete implementation, benchmarking, and unit testing of all 37 Multi-Objective Optimization algorithms across continuous, constrained, discrete, combinatorial, many-objective, and multi-task learning problem benchmarks.\n")

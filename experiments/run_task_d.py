@@ -3,40 +3,40 @@ run_task_d.py - Executes Task D: Head-to-Head Comparisons
 ==========================================================
 Covers:
 1. Continuous Bi-Objective Head-to-Head on P3 (unconstrained) and P5 (constrained).
-   (10 seeds each, mean +/- std of HV, Spacing, IGD; combined Pareto front plots)
+   (10 seeds each, 10,000 evals, mean +/- std of HV, Spacing, IGD; combined Pareto front plots).
+   On P5: plain NSGA-II (use_constraints=False) and Constrained NSGA-II (alg21) tested separately.
 2. Many-Objective Head-to-Head on P10 (M = 5):
-   Compares NSGA-II, NSGA-III, MOEA/D, RVEA, and HypE.
+   Compares NSGA-II, NSGA-III, MOEA/D, RVEA, and HypE (10 seeds, 10,000 evals).
 3. Discrete Combinatorial Head-to-Head on P8 (TSP):
-   Compares MOEA/D-ACO, MOACO, NSGA-II, and MOMA with permutation operators.
+   Compares MOEA/D-ACO, MOACO, Permutation NSGA-II, and MOMA (2-opt) (10 seeds, 10,000 evals).
 4. Preference, Ranking & Gradient Special Comparisons:
    - TOPSIS and VIKOR on NSGA-II front from P4, plus 0.1 weight shift sensitivity
    - MGDA vs GradNorm vs Equal Weights on P13
+
+Multiprocessing: Windows-compatible multiprocessing.Pool(os.cpu_count()-1)
+under if __name__ == "__main__":.
+Jobs are (algorithm, problem, seed); each result is written to results/data/raw/
+immediately, skipping existing completed seed files.
 All outputs written with standard csv module (ZERO PANDAS).
 """
 
 import os
 import sys
 import time
+import json
 import csv
+import argparse
+import multiprocessing
+from typing import Dict, List, Any, Tuple
 import numpy as np
 import matplotlib.pyplot as plt
-from typing import Dict, List, Any
 
 sys.path.insert(0, os.path.abspath('.'))
 sys.path.insert(0, os.path.abspath('algorithms'))
 import moo_utils as mu
 
-import alg01_weighted_sum as a01
-import alg02_epsilon_constraint as a02
-import alg04_weight_metric as a04
-import alg05_value_function as a05
-import alg06_goal_programming as a06
-import alg07_lexicographic as a07
 import alg08_topsis as a08
 import alg09_vikor as a09
-import alg10_vega as a10
-import alg11_moga as a11
-import alg13_npga as a13
 import alg14_nsga2 as a14
 import alg15_nsga3 as a15
 import alg16_spea2 as a16
@@ -56,13 +56,19 @@ import alg29_moba as a29
 import alg30_moma as a30
 import alg31_rvea as a31
 import alg32_ibea as a32
-import alg33_sms_emoa as a33
 import alg34_hype as a34
-import alg35_r_nsga2 as a35
 import alg36_mgda as a36
 import alg37_gradnorm as a37
 from operators import order_crossover_ox, swap_mutation, inversion_mutation
 from experiments.budget import run_budgeted
+
+
+ALGORITHM_MODULES = {
+    14: a14, 15: a15, 16: a16, 17: a17, 18: a18, 19: a19,
+    20: a20, 21: a21, 22: a22, 23: a23, 24: a24, 25: a25,
+    26: a26, 27: a27, 28: a28, 29: a29, 30: a30, 31: a31,
+    32: a32, 34: a34, 36: a36, 37: a37
+}
 
 
 def save_csv(filepath: str, records: List[Dict[str, Any]], fieldnames: List[str]):
@@ -73,75 +79,301 @@ def save_csv(filepath: str, records: List[Dict[str, Any]], fieldnames: List[str]
         writer.writerows(records)
 
 
+def run_perm_nsga2(prob, seed: int = 42, budget: int = 10000) -> np.ndarray:
+    """Permutation NSGA-II on P8 with Order Crossover (OX) and mutation."""
+    rng = np.random.default_rng(seed)
+    N = 100
+    n_gen = max(1, budget // N)
+    pop = [rng.permutation(15) for _ in range(N)]
+    F = np.array([prob.evaluate(p)[0] for p in pop])
+    CV = np.zeros(N)
+
+    for gen in range(n_gen):
+        offspring = []
+        for _ in range(0, N, 2):
+            p1 = pop[rng.integers(N)]
+            p2 = pop[rng.integers(N)]
+            c1, c2 = order_crossover_ox(p1, p2)
+            c1 = inversion_mutation(c1, pm=0.2)
+            c2 = swap_mutation(c2, pm=0.2)
+            offspring.extend([c1, c2])
+
+        comb_pop = np.vstack([pop, offspring[:N]])
+        comb_F = np.array([prob.evaluate(x)[0] for x in comb_pop])
+        comb_CV = np.zeros(len(comb_pop))
+        fronts = mu.fast_non_dominated_sort(comb_F, comb_CV)
+        new_idx = []
+        for f in fronts:
+            if len(new_idx) + len(f) <= N:
+                new_idx.extend(f)
+            else:
+                cd = mu.calculate_crowding_distance(comb_F, f)
+                new_idx.extend([f[i] for i in np.argsort(-cd)[:(N - len(new_idx))]])
+                break
+        pop = comb_pop[new_idx]
+        F = comb_F[new_idx]
+
+    fronts = mu.fast_non_dominated_sort(F, CV)
+    return F[fronts[0]]
+
+
+def run_moma_2opt(prob, seed: int = 42, budget: int = 10000) -> np.ndarray:
+    """Multi-Objective Memetic Algorithm with 2-opt local search on P8."""
+    rng = np.random.default_rng(seed)
+    N = 50
+    n_gen = max(1, budget // (3 * N))
+    pop = [rng.permutation(15) for _ in range(N)]
+    F = np.array([prob.evaluate(p)[0] for p in pop])
+
+    for gen in range(n_gen):
+        offspring = []
+        for _ in range(0, N, 2):
+            p1 = pop[rng.integers(N)]
+            p2 = pop[rng.integers(N)]
+            c1, c2 = order_crossover_ox(p1, p2)
+            for _ in range(2):
+                i, j = sorted(rng.choice(15, size=2, replace=False))
+                cand1 = c1.copy()
+                cand1[i:j+1] = cand1[i:j+1][::-1]
+                if prob.evaluate(cand1)[0][0] < prob.evaluate(c1)[0][0]:
+                    c1 = cand1
+            offspring.extend([c1, c2])
+
+        comb_pop = np.vstack([pop, offspring[:N]])
+        comb_F = np.array([prob.evaluate(x)[0] for x in comb_pop])
+        fronts = mu.fast_non_dominated_sort(comb_F, np.zeros(len(comb_pop)))
+        new_idx = []
+        for f in fronts:
+            if len(new_idx) + len(f) <= N:
+                new_idx.extend(f)
+            else:
+                cd = mu.calculate_crowding_distance(comb_F, f)
+                new_idx.extend([f[i] for i in np.argsort(-cd)[:(N - len(new_idx))]])
+                break
+        pop = comb_pop[new_idx]
+        F = comb_F[new_idx]
+
+    fronts = mu.fast_non_dominated_sort(F, np.zeros(N))
+    return F[fronts[0]]
+
+
+# ==============================================================================
+# MULTIPROCESSING WORKERS (PICKLABLE TOP-LEVEL FUNCTIONS)
+# ==============================================================================
+
+def _worker_biobjective_job(args: Tuple[int, str, str, int, int, str]) -> Dict[str, Any]:
+    """Worker executing a single bi-objective job on P3 or P5."""
+    alg_num, alg_name, p_name, seed, budget, raw_dir = args
+    cache_name = f"d1_{alg_name}_{p_name}_seed{seed}.json".replace(" ", "_").replace("/", "_")
+    cache_path = os.path.join(raw_dir, cache_name)
+
+    if os.path.exists(cache_path):
+        try:
+            with open(cache_path, 'r', encoding='utf-8') as f:
+                return json.load(f)
+        except Exception:
+            pass
+
+    prob = mu.ProblemP3() if p_name == "P3" else mu.ProblemP5()
+    mod = ALGORITHM_MODULES[alg_num]
+    kwargs = {}
+    if alg_num == 14 and p_name == "P5":
+        kwargs['use_constraints'] = False
+
+    res = run_budgeted(alg_num, mod, prob, seed=seed, budget=budget, **kwargs)
+    front_F = res.get('F_front', np.array([]))
+
+    hv, sp, igd = 0.0, 0.0, 999.0
+    if front_F is not None and len(front_F) > 0:
+        hv_m, igd_m, sp_m = mu.compute_metrics(front_F, prob.name)
+        hv = hv_m if hv_m is not None else 0.0
+        igd = igd_m if igd_m is not None else 999.0
+        sp = sp_m if sp_m is not None else 0.0
+
+    result = {
+        'problem': p_name,
+        'algorithm': alg_name,
+        'seed': seed,
+        'hv': float(hv),
+        'spacing': float(sp),
+        'igd': float(igd),
+        'evaluations': int(res.get('evaluations', budget)),
+        'front_F': front_F.tolist() if front_F is not None and len(front_F) > 0 else []
+    }
+
+    with open(cache_path, 'w', encoding='utf-8') as f:
+        json.dump(result, f)
+
+    return result
+
+
+def _worker_manyobjective_job(args: Tuple[int, str, int, int, str]) -> Dict[str, Any]:
+    """Worker executing a single many-objective job on P10 M=5."""
+    alg_num, alg_name, seed, budget, raw_dir = args
+    cache_name = f"d2_{alg_name}_P10_M5_seed{seed}.json".replace(" ", "_").replace("/", "_")
+    cache_path = os.path.join(raw_dir, cache_name)
+
+    if os.path.exists(cache_path):
+        try:
+            with open(cache_path, 'r', encoding='utf-8') as f:
+                return json.load(f)
+        except Exception:
+            pass
+
+    prob = mu.ProblemP10(M=5)
+    mod = ALGORITHM_MODULES[alg_num]
+    res = run_budgeted(alg_num, mod, prob, seed=seed, budget=budget)
+    front_F = res.get('F_front', np.array([]))
+
+    hv, igd = 0.0, 999.0
+    if front_F is not None and len(front_F) > 0:
+        hv_m, igd_m, _ = mu.compute_metrics(front_F, 'P10_M5')
+        hv = hv_m if hv_m is not None else 0.0
+        igd = igd_m if igd_m is not None else 999.0
+
+    result = {
+        'problem': 'P10_M5',
+        'algorithm': alg_name,
+        'seed': seed,
+        'hv': float(hv),
+        'igd': float(igd),
+        'evaluations': int(res.get('evaluations', budget)),
+        'front_F': front_F.tolist() if front_F is not None and len(front_F) > 0 else []
+    }
+
+    with open(cache_path, 'w', encoding='utf-8') as f:
+        json.dump(result, f)
+
+    return result
+
+
+def _worker_discrete_job(args: Tuple[Any, str, int, int, str]) -> Dict[str, Any]:
+    """Worker executing a single discrete combinatorial job on P8."""
+    alg_key, alg_name, seed, budget, raw_dir = args
+    cache_name = f"d3_{alg_name}_P8_seed{seed}.json".replace(" ", "_").replace("/", "_")
+    cache_path = os.path.join(raw_dir, cache_name)
+
+    if os.path.exists(cache_path):
+        try:
+            with open(cache_path, 'r', encoding='utf-8') as f:
+                return json.load(f)
+        except Exception:
+            pass
+
+    prob = mu.ProblemP8(seed=7)
+    evals = budget
+
+    if alg_key == 20:
+        res = run_budgeted(20, a20, prob, seed=seed, budget=budget)
+        front_F = res.get('F_front', np.array([]))
+        evals = res.get('evaluations', budget)
+    elif alg_key == 25:
+        res = run_budgeted(25, a25, prob, seed=seed, budget=budget)
+        front_F = res.get('F_front', np.array([]))
+        evals = res.get('evaluations', budget)
+    elif alg_key == 'perm_nsga2':
+        front_F = run_perm_nsga2(prob, seed=seed, budget=budget)
+    elif alg_key == 'moma_2opt':
+        front_F = run_moma_2opt(prob, seed=seed, budget=budget)
+    else:
+        raise ValueError(f"Unknown discrete alg {alg_key}")
+
+    hv, sp = 0.0, 0.0
+    if front_F is not None and len(front_F) > 0:
+        hv_m, _, sp_m = mu.compute_metrics(front_F, 'P8')
+        hv = hv_m if hv_m is not None else 0.0
+        sp = sp_m if sp_m is not None else 0.0
+
+    result = {
+        'problem': 'P8',
+        'algorithm': alg_name,
+        'seed': seed,
+        'hv': float(hv),
+        'spacing': float(sp),
+        'evaluations': int(evals),
+        'front_F': front_F.tolist() if front_F is not None and len(front_F) > 0 else []
+    }
+
+    with open(cache_path, 'w', encoding='utf-8') as f:
+        json.dump(result, f)
+
+    return result
+
+
 # ==============================================================================
 # PART 1: CONTINUOUS BI-OBJECTIVE COMPARISON (P3 & P5)
 # ==============================================================================
 
-def run_biobjective_comparison(p_name: str = "P3", n_seeds: int = 10):
+def run_biobjective_comparison(p_name: str = "P3", n_seeds: int = 10, budget: int = 10000, pool=None):
     """
     Runs continuous bi-objective algorithms on P3 or P5 across n_seeds with equal budget.
     """
     prob = mu.ProblemP3() if p_name == "P3" else mu.ProblemP5()
     true_F = prob.true_pareto_front(n_points=100)
+    raw_dir = 'results/data/raw'
+    os.makedirs(raw_dir, exist_ok=True)
 
-    # Algorithms applicable to continuous bi-objective
     algs = [
-        (14, "NSGA-II", a14),
-        (16, "SPEA2", a16),
-        (17, "PESA-II", a17),
-        (18, "MOEA/D", a18),
-        (19, "MOEA/D-DE", a19),
-        (21, "Constrained NSGA-II", a21),
-        (22, "MOPSO", a22),
-        (23, "MOGWO", a23),
-        (24, "MOABC", a24),
-        (27, "MODE", a27),
-        (28, "MO-TLBO", a28),
-        (29, "MOBA", a29),
-        (30, "MOMA", a30),
-        (32, "IBEA", a32)
+        (14, "NSGA-II"),
+        (16, "SPEA2"),
+        (17, "PESA-II"),
+        (18, "MOEA/D"),
+        (19, "MOEA/D-DE"),
+        (21, "Constrained NSGA-II"),
+        (22, "MOPSO"),
+        (23, "MOGWO"),
+        (24, "MOABC"),
+        (27, "MODE"),
+        (28, "MO-TLBO"),
+        (29, "MOBA"),
+        (30, "MOMA"),
+        (32, "IBEA")
     ]
 
-    records = []
-    fronts_dict = {}
-
-    for num, name, mod in algs:
-        hv_list, sp_list, igd_list = [], [], []
-        best_front = None
-        best_hv = -1.0
-
+    job_args = []
+    for num, name in algs:
         for s in range(n_seeds):
             seed = s * 10 + 13
-            res = run_budgeted(num, mod, prob, seed=seed)
-            front_F = res.get('F_front', np.array([]))
+            job_args.append((num, name, p_name, seed, budget, raw_dir))
 
-            if len(front_F) > 0:
-                hv_m, igd_m, sp_m = mu.compute_metrics(front_F, prob.name)
-                hv = hv_m if hv_m is not None else 0.0
-                igd = igd_m if igd_m is not None else 999.0
-                sp = sp_m if sp_m is not None else 0.0
+    if pool is not None:
+        raw_results = pool.map(_worker_biobjective_job, job_args)
+    else:
+        raw_results = [_worker_biobjective_job(arg) for arg in job_args]
 
-                hv_list.append(hv)
-                sp_list.append(sp)
-                igd_list.append(igd)
+    # Group by algorithm
+    grouped = {}
+    fronts_dict = {}
+    for r in raw_results:
+        alg_name = r['algorithm']
+        if alg_name not in grouped:
+            grouped[alg_name] = {'hv': [], 'sp': [], 'igd': [], 'best_hv': -1.0, 'best_front': None}
+        grouped[alg_name]['hv'].append(r['hv'])
+        grouped[alg_name]['sp'].append(r['spacing'])
+        grouped[alg_name]['igd'].append(r['igd'])
+        if r['hv'] > grouped[alg_name]['best_hv']:
+            grouped[alg_name]['best_hv'] = r['hv']
+            grouped[alg_name]['best_front'] = np.array(r['front_F'])
 
-                if hv > best_hv:
-                    best_hv = hv
-                    best_front = front_F
+    records = []
+    for num, name in algs:
+        g = grouped.get(name, {'hv': [], 'sp': [], 'igd': [], 'best_front': None})
+        fronts_dict[name] = g['best_front']
+        hv_arr = g['hv']
+        sp_arr = g['sp']
+        igd_arr = g['igd']
 
-        fronts_dict[name] = best_front
         records.append({
             'Problem': p_name,
             'Algorithm': name,
-            'HV_Mean': round(float(np.mean(hv_list)), 4) if len(hv_list) > 0 else 0.0,
-            'HV_Std': round(float(np.std(hv_list)), 4) if len(hv_list) > 0 else 0.0,
-            'Spacing_Mean': round(float(np.mean(sp_list)), 4) if len(sp_list) > 0 else 0.0,
-            'Spacing_Std': round(float(np.std(sp_list)), 4) if len(sp_list) > 0 else 0.0,
-            'IGD_Mean': round(float(np.mean(igd_list)), 4) if len(igd_list) > 0 else 999.0,
-            'IGD_Std': round(float(np.std(igd_list)), 4) if len(igd_list) > 0 else 0.0,
+            'HV_Mean': round(float(np.mean(hv_arr)), 4) if len(hv_arr) > 0 else 0.0,
+            'HV_Std': round(float(np.std(hv_arr)), 4) if len(hv_arr) > 0 else 0.0,
+            'Spacing_Mean': round(float(np.mean(sp_arr)), 4) if len(sp_arr) > 0 else 0.0,
+            'Spacing_Std': round(float(np.std(sp_arr)), 4) if len(sp_arr) > 0 else 0.0,
+            'IGD_Mean': round(float(np.mean(igd_arr)), 4) if len(igd_arr) > 0 else 999.0,
+            'IGD_Std': round(float(np.std(igd_arr)), 4) if len(igd_arr) > 0 else 0.0,
         })
 
-    # Sort descending by HV_Mean
     records.sort(key=lambda r: r['HV_Mean'], reverse=True)
     for idx, r in enumerate(records):
         r['Rank'] = idx + 1
@@ -174,46 +406,53 @@ def run_biobjective_comparison(p_name: str = "P3", n_seeds: int = 10):
 # PART 2: MANY-OBJECTIVE COMPARISON ON P10 (M = 5)
 # ==============================================================================
 
-def run_manyobjective_comparison(n_seeds: int = 10):
+def run_manyobjective_comparison(n_seeds: int = 10, budget: int = 10000, pool=None):
     """
     On P10 (DTLZ2, M = 5), compares NSGA-II, NSGA-III, MOEA/D, RVEA, and HypE.
     """
     print("\nRunning Task D2: Many-Objective Comparison on P10 (M = 5)...")
-    prob = mu.ProblemP10(M=5)
-    true_F = prob.true_pareto_front(n_points=200)
+    raw_dir = 'results/data/raw'
+    os.makedirs(raw_dir, exist_ok=True)
 
     algs = [
-        (14, "NSGA-II", a14),
-        (15, "NSGA-III", a15),
-        (18, "MOEA/D", a18),
-        (31, "RVEA", a31),
-        (34, "HypE", a34)
+        (14, "NSGA-II"),
+        (15, "NSGA-III"),
+        (18, "MOEA/D"),
+        (31, "RVEA"),
+        (34, "HypE")
     ]
 
-    records = []
-    ref_norm = np.ones(5) * 1.5
-
-    for num, name, mod in algs:
-        hv_list, igd_list = [], []
-
+    job_args = []
+    for num, name in algs:
         for s in range(n_seeds):
             seed = s * 10 + 17
-            res = run_budgeted(num, mod, prob, seed=seed)
-            front_F = res.get('F_front', np.array([]))
+            job_args.append((num, name, seed, budget, raw_dir))
 
-            if len(front_F) > 0:
-                hv_m, igd_m, _ = mu.compute_metrics(front_F, 'P10_M5')
-                hv = hv_m if hv_m is not None else 0.0
-                igd = igd_m if igd_m is not None else 999.0
-                hv_list.append(hv)
-                igd_list.append(igd)
+    if pool is not None:
+        raw_results = pool.map(_worker_manyobjective_job, job_args)
+    else:
+        raw_results = [_worker_manyobjective_job(arg) for arg in job_args]
+
+    grouped = {}
+    for r in raw_results:
+        alg_name = r['algorithm']
+        if alg_name not in grouped:
+            grouped[alg_name] = {'hv': [], 'igd': []}
+        grouped[alg_name]['hv'].append(r['hv'])
+        grouped[alg_name]['igd'].append(r['igd'])
+
+    records = []
+    for num, name in algs:
+        g = grouped.get(name, {'hv': [], 'igd': []})
+        hv_arr = g['hv']
+        igd_arr = g['igd']
 
         records.append({
             'Algorithm': name,
-            'HV_Mean': round(float(np.mean(hv_list)), 4) if len(hv_list) > 0 else 0.0,
-            'HV_Std': round(float(np.std(hv_list)), 4) if len(hv_list) > 0 else 0.0,
-            'IGD_Mean': round(float(np.mean(igd_list)), 4) if len(igd_list) > 0 else 999.0,
-            'IGD_Std': round(float(np.std(igd_list)), 4) if len(igd_list) > 0 else 0.0
+            'HV_Mean': round(float(np.mean(hv_arr)), 4) if len(hv_arr) > 0 else 0.0,
+            'HV_Std': round(float(np.std(hv_arr)), 4) if len(hv_arr) > 0 else 0.0,
+            'IGD_Mean': round(float(np.mean(igd_arr)), 4) if len(igd_arr) > 0 else 999.0,
+            'IGD_Std': round(float(np.std(igd_arr)), 4) if len(igd_arr) > 0 else 0.0
         })
 
     records.sort(key=lambda r: r['HV_Mean'], reverse=True)
@@ -249,156 +488,58 @@ def run_manyobjective_comparison(n_seeds: int = 10):
 # PART 3: DISCRETE COMBINATORIAL COMPARISON ON P8 (TSP)
 # ==============================================================================
 
-def run_discrete_comparison(n_seeds: int = 10):
+def run_discrete_comparison(n_seeds: int = 10, budget: int = 10000, pool=None):
     """
     On P8 (15-city bi-objective TSP), compares MOEA/D-ACO, MOACO, NSGA-II (permutation), and MOMA.
     """
     print("\nRunning Task D3: Discrete Combinatorial Comparison on P8 (TSP)...")
-    prob = mu.ProblemP8(seed=7)
+    raw_dir = 'results/data/raw'
+    os.makedirs(raw_dir, exist_ok=True)
+
+    algs = [
+        (20, 'MOEA/D-ACO'),
+        (25, 'MOACO'),
+        ('perm_nsga2', 'Permutation NSGA-II'),
+        ('moma_2opt', 'MOMA (2-opt)')
+    ]
+
+    job_args = []
+    for alg_key, alg_name in algs:
+        for s in range(n_seeds):
+            seed = s * 10 + 7
+            job_args.append((alg_key, alg_name, seed, budget, raw_dir))
+
+    if pool is not None:
+        raw_results = pool.map(_worker_discrete_job, job_args)
+    else:
+        raw_results = [_worker_discrete_job(arg) for arg in job_args]
+
+    grouped = {}
+    fronts_dict = {}
+    for r in raw_results:
+        alg_name = r['algorithm']
+        if alg_name not in grouped:
+            grouped[alg_name] = {'hv': [], 'sp': [], 'best_hv': -1.0, 'best_front': None}
+        grouped[alg_name]['hv'].append(r['hv'])
+        grouped[alg_name]['sp'].append(r['spacing'])
+        if r['hv'] > grouped[alg_name]['best_hv']:
+            grouped[alg_name]['best_hv'] = r['hv']
+            grouped[alg_name]['best_front'] = np.array(r['front_F'])
 
     records = []
-    fronts_dict = {}
+    for alg_key, alg_name in algs:
+        g = grouped.get(alg_name, {'hv': [], 'sp': [], 'best_front': None})
+        fronts_dict[alg_name] = g['best_front']
+        hv_arr = g['hv']
+        sp_arr = g['sp']
 
-    # 1. MOEA/D-ACO
-    hv_list, sp_list = [], []
-    best_f = None
-    for s in range(n_seeds):
-        res = run_budgeted(20, a20, prob, seed=s * 10 + 7)
-        front = res['F_front']
-        hv_m, _, sp_m = mu.compute_metrics(front, 'P8')
-        hv = hv_m if hv_m is not None else 0.0
-        sp = sp_m if sp_m is not None else 0.0
-        hv_list.append(hv); sp_list.append(sp)
-        if best_f is None or hv > np.max(hv_list[:-1] or [0]): best_f = front
-    fronts_dict['MOEA/D-ACO'] = best_f
-    records.append({
-        'Algorithm': 'MOEA/D-ACO',
-        'HV_Mean': round(float(np.mean(hv_list)), 4),
-        'HV_Std': round(float(np.std(hv_list)), 4),
-        'Spacing_Mean': round(float(np.mean(sp_list)), 4),
-        'Spacing_Std': round(float(np.std(sp_list)), 4)
-    })
-
-    # 2. MOACO
-    hv_list, sp_list = [], []
-    best_f = None
-    for s in range(n_seeds):
-        res = run_budgeted(25, a25, prob, seed=s * 10 + 7)
-        front = res['F_front']
-        hv_m, _, sp_m = mu.compute_metrics(front, 'P8')
-        hv = hv_m if hv_m is not None else 0.0
-        sp = sp_m if sp_m is not None else 0.0
-        hv_list.append(hv); sp_list.append(sp)
-        if best_f is None or hv > np.max(hv_list[:-1] or [0]): best_f = front
-    fronts_dict['MOACO'] = best_f
-    records.append({
-        'Algorithm': 'MOACO',
-        'HV_Mean': round(float(np.mean(hv_list)), 4),
-        'HV_Std': round(float(np.std(hv_list)), 4),
-        'Spacing_Mean': round(float(np.mean(sp_list)), 4),
-        'Spacing_Std': round(float(np.std(sp_list)), 4)
-    })
-
-    # 3. Permutation NSGA-II (coded with OX and swap mutation)
-    hv_list, sp_list = [], []
-    best_f = None
-    for s in range(n_seeds):
-        rng = np.random.default_rng(s * 10 + 7)
-        N = 20
-        pop = [rng.permutation(15) for _ in range(N)]
-        F = np.array([prob.evaluate(p)[0] for p in pop])
-        CV = np.zeros(N)
-
-        for gen in range(10):
-            offspring = []
-            for _ in range(0, N, 2):
-                p1 = pop[np.random.randint(N)]
-                p2 = pop[np.random.randint(N)]
-                c1, c2 = order_crossover_ox(p1, p2)
-                c1 = inversion_mutation(c1, pm=0.2)
-                c2 = swap_mutation(c2, pm=0.2)
-                offspring.extend([c1, c2])
-
-            comb_pop = np.vstack([pop, offspring[:N]])
-            comb_F = np.array([prob.evaluate(x)[0] for x in comb_pop])
-            comb_CV = np.zeros(len(comb_pop))
-            fronts = mu.fast_non_dominated_sort(comb_F, comb_CV)
-            new_idx = []
-            for f in fronts:
-                if len(new_idx) + len(f) <= N: new_idx.extend(f)
-                else:
-                    cd = mu.calculate_crowding_distance(comb_F, f)
-                    new_idx.extend([f[i] for i in np.argsort(-cd)[:(N - len(new_idx))]])
-                    break
-            pop = comb_pop[new_idx]
-            F = comb_F[new_idx]
-
-        fronts = mu.fast_non_dominated_sort(F, CV)
-        front = F[fronts[0]]
-        hv_m, _, sp_m = mu.compute_metrics(front, 'P8')
-        hv = hv_m if hv_m is not None else 0.0
-        sp = sp_m if sp_m is not None else 0.0
-        hv_list.append(hv); sp_list.append(sp)
-        if best_f is None or hv > np.max(hv_list[:-1] or [0]): best_f = front
-    fronts_dict['Permutation NSGA-II'] = best_f
-    records.append({
-        'Algorithm': 'Permutation NSGA-II',
-        'HV_Mean': round(float(np.mean(hv_list)), 4),
-        'HV_Std': round(float(np.std(hv_list)), 4),
-        'Spacing_Mean': round(float(np.mean(sp_list)), 4),
-        'Spacing_Std': round(float(np.std(sp_list)), 4)
-    })
-
-    # 4. MOMA with 2-opt Local Search
-    hv_list, sp_list = [], []
-    best_f = None
-    for s in range(n_seeds):
-        rng = np.random.default_rng(s * 10 + 7)
-        N = 20
-        pop = [rng.permutation(15) for _ in range(N)]
-        F = np.array([prob.evaluate(p)[0] for p in pop])
-
-        for gen in range(10):
-            offspring = []
-            for _ in range(0, N, 2):
-                p1 = pop[np.random.randint(N)]
-                p2 = pop[np.random.randint(N)]
-                c1, c2 = order_crossover_ox(p1, p2)
-                # 2-opt local search hill climbing
-                for _ in range(2):
-                    i, j = sorted(np.random.choice(15, size=2, replace=False))
-                    cand1 = c1.copy(); cand1[i:j+1] = cand1[i:j+1][::-1]
-                    if prob.evaluate(cand1)[0][0] < prob.evaluate(c1)[0][0]: c1 = cand1
-                offspring.extend([c1, c2])
-
-            comb_pop = np.vstack([pop, offspring[:N]])
-            comb_F = np.array([prob.evaluate(x)[0] for x in comb_pop])
-            fronts = mu.fast_non_dominated_sort(comb_F, np.zeros(len(comb_pop)))
-            new_idx = []
-            for f in fronts:
-                if len(new_idx) + len(f) <= N: new_idx.extend(f)
-                else:
-                    cd = mu.calculate_crowding_distance(comb_F, f)
-                    new_idx.extend([f[i] for i in np.argsort(-cd)[:(N - len(new_idx))]])
-                    break
-            pop = comb_pop[new_idx]
-            F = comb_F[new_idx]
-
-        fronts = mu.fast_non_dominated_sort(F, np.zeros(N))
-        front = F[fronts[0]]
-        hv_m, _, sp_m = mu.compute_metrics(front, 'P8')
-        hv = hv_m if hv_m is not None else 0.0
-        sp = sp_m if sp_m is not None else 0.0
-        hv_list.append(hv); sp_list.append(sp)
-        if best_f is None or hv > np.max(hv_list[:-1] or [0]): best_f = front
-    fronts_dict['MOMA (2-opt)'] = best_f
-    records.append({
-        'Algorithm': 'MOMA (2-opt)',
-        'HV_Mean': round(float(np.mean(hv_list)), 4),
-        'HV_Std': round(float(np.std(hv_list)), 4),
-        'Spacing_Mean': round(float(np.mean(sp_list)), 4),
-        'Spacing_Std': round(float(np.std(sp_list)), 4)
-    })
+        records.append({
+            'Algorithm': alg_name,
+            'HV_Mean': round(float(np.mean(hv_arr)), 4) if len(hv_arr) > 0 else 0.0,
+            'HV_Std': round(float(np.std(hv_arr)), 4) if len(hv_arr) > 0 else 0.0,
+            'Spacing_Mean': round(float(np.mean(sp_arr)), 4) if len(sp_arr) > 0 else 0.0,
+            'Spacing_Std': round(float(np.std(sp_arr)), 4) if len(sp_arr) > 0 else 0.0
+        })
 
     records.sort(key=lambda r: r['HV_Mean'], reverse=True)
     for idx, r in enumerate(records):
@@ -435,7 +576,6 @@ def run_mcdm_comparison():
     print("\nRunning Task D4: TOPSIS & VIKOR on P4 Portfolio Front...")
     p4 = mu.ProblemP4()
     res_nsga2 = a14.run(p4, pop_size=30, n_gen=20, seed=42)
-    front_X = res_nsga2['X_front']
     front_F = res_nsga2['F_front']
 
     # Criteria: Risk (min) and Return (max = -f2)
@@ -532,38 +672,64 @@ def run_gradient_comparison():
 
 
 def main():
+    parser = argparse.ArgumentParser(description="Task D Head-to-Head Comparisons")
+    parser.add_argument("--smoke", action="store_true", help="Run quick 1-seed smoke test")
+    args = parser.parse_args()
+
+    n_seeds = 1 if args.smoke else 10
+    budget = 100 if args.smoke else 10000
+
     print("=" * 80)
-    print("EXECUTING TASK D: HEAD-TO-HEAD COMPARISONS (ALL 5 PARTS)")
+    mode_str = "SMOKE TEST (1 seed, small budget)" if args.smoke else "FULL SWEEP (10 seeds, 10,000 evals)"
+    print(f"EXECUTING TASK D: HEAD-TO-HEAD COMPARISONS — {mode_str}")
     print("=" * 80)
+
     os.makedirs('results/figures', exist_ok=True)
     os.makedirs('results/data', exist_ok=True)
+    os.makedirs('results/data/raw', exist_ok=True)
 
-    # D1: Bi-objective on P3 and P5
-    rec_p3 = run_biobjective_comparison("P3", n_seeds=10)
-    save_csv('results/data/task_d1_p3_ranked.csv', rec_p3,
-             ['Rank', 'Problem', 'Algorithm', 'HV_Mean', 'HV_Std', 'Spacing_Mean', 'Spacing_Std', 'IGD_Mean', 'IGD_Std'])
+    num_workers = max(1, os.cpu_count() - 1)
+    print(f"Initializing multiprocessing pool with {num_workers} workers...")
 
-    rec_p5 = run_biobjective_comparison("P5", n_seeds=10)
-    save_csv('results/data/task_d1_p5_ranked.csv', rec_p5,
-             ['Rank', 'Problem', 'Algorithm', 'HV_Mean', 'HV_Std', 'Spacing_Mean', 'Spacing_Std', 'IGD_Mean', 'IGD_Std'])
+    with multiprocessing.Pool(processes=num_workers) as pool:
+        # D1: Bi-objective on P3 and P5
+        print("\n[D1] Running Bi-Objective Comparison on P3...")
+        rec_p3 = run_biobjective_comparison("P3", n_seeds=n_seeds, budget=budget, pool=pool)
+        save_csv('results/data/task_d1_p3_ranked.csv', rec_p3,
+                 ['Rank', 'Problem', 'Algorithm', 'HV_Mean', 'HV_Std', 'Spacing_Mean', 'Spacing_Std', 'IGD_Mean', 'IGD_Std'])
+        print(f"  -> Saved results/data/task_d1_p3_ranked.csv ({len(rec_p3)} algorithms)")
 
-    # D2: Many-objective on P10 M=5
-    rec_m5 = run_manyobjective_comparison(n_seeds=10)
-    save_csv('results/data/task_d2_p10_m5_ranked.csv', rec_m5,
-             ['Rank', 'Algorithm', 'HV_Mean', 'HV_Std', 'IGD_Mean', 'IGD_Std'])
+        print("\n[D1] Running Bi-Objective Comparison on P5...")
+        rec_p5 = run_biobjective_comparison("P5", n_seeds=n_seeds, budget=budget, pool=pool)
+        save_csv('results/data/task_d1_p5_ranked.csv', rec_p5,
+                 ['Rank', 'Problem', 'Algorithm', 'HV_Mean', 'HV_Std', 'Spacing_Mean', 'Spacing_Std', 'IGD_Mean', 'IGD_Std'])
+        print(f"  -> Saved results/data/task_d1_p5_ranked.csv ({len(rec_p5)} algorithms)")
 
-    # D3: Discrete on P8 TSP
-    rec_p8 = run_discrete_comparison(n_seeds=10)
-    save_csv('results/data/task_d3_p8_tsp_ranked.csv', rec_p8,
-             ['Rank', 'Algorithm', 'HV_Mean', 'HV_Std', 'Spacing_Mean', 'Spacing_Std'])
+        # D2: Many-objective on P10 M=5
+        print("\n[D2] Running Many-Objective Comparison on P10 (M=5)...")
+        rec_m5 = run_manyobjective_comparison(n_seeds=n_seeds, budget=budget, pool=pool)
+        save_csv('results/data/task_d2_p10_m5_ranked.csv', rec_m5,
+                 ['Rank', 'Algorithm', 'HV_Mean', 'HV_Std', 'IGD_Mean', 'IGD_Std'])
+        print(f"  -> Saved results/data/task_d2_p10_m5_ranked.csv ({len(rec_m5)} algorithms)")
+
+        # D3: Discrete on P8 TSP
+        print("\n[D3] Running Discrete Combinatorial Comparison on P8 TSP...")
+        rec_p8 = run_discrete_comparison(n_seeds=n_seeds, budget=budget, pool=pool)
+        save_csv('results/data/task_d3_p8_tsp_ranked.csv', rec_p8,
+                 ['Rank', 'Algorithm', 'HV_Mean', 'HV_Std', 'Spacing_Mean', 'Spacing_Std'])
+        print(f"  -> Saved results/data/task_d3_p8_tsp_ranked.csv ({len(rec_p8)} algorithms)")
 
     # D4: MCDM on P4 front
+    print("\n[D4] Running MCDM Comparison on P4...")
     mcdm_res = run_mcdm_comparison()
     save_csv('results/data/task_d4_mcdm.csv', mcdm_res, list(mcdm_res[0].keys()))
+    print("  -> Saved results/data/task_d4_mcdm.csv")
 
     # D5: Gradient MTL on P13
+    print("\n[D5] Running Gradient MTL Comparison on P13...")
     mtl_res = run_gradient_comparison()
     save_csv('results/data/task_d5_mtl.csv', mtl_res, list(mtl_res[0].keys()))
+    print("  -> Saved results/data/task_d5_mtl.csv")
 
     print("\n" + "=" * 80)
     print("ALL TASK D EXPERIMENTS COMPLETED AND RAW CSVs WRITTEN TO results/data/!")

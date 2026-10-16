@@ -3,7 +3,7 @@ import os
 
 md = []
 md.append("# Task D — Empirical Comparative Benchmarking\n")
-md.append("## M.Tech Optimization Techniques · Lab Assignment 7\n")
+md.append("## B.Tech Optimization Techniques · Lab Assignment 7\n")
 md.append("**Author Roll Number:** 241070005 (R = 05)  ")
 md.append("**Scope:** Systematic empirical evaluation across 5 rigorous comparative experiments: (1) Benchmark P3 and Engineering P5 rankings across 14 algorithms; (2) Many-Objective $M=5$ DTLZ2; (3) Discrete Permutation TSP P8; (4) MCDM post-processing via TOPSIS & VIKOR on P4 front; (5) Multi-Task Gradient Optimization on P13.\n")
 md.append("---\n")

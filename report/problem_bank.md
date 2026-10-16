@@ -1,5 +1,5 @@
 # Problem Bank Specifications (Problems P1 to P14)
-## M.Tech Optimization Techniques · Lab Assignment 7
+## B.Tech Optimization Techniques · Lab Assignment 7
 **Author:** Akshat Tikaria  
 **Roll Number:** 241070005 (R = 05)  
 **Standard Requirements:** One standalone page per problem formulation including Standard Form, Encoding, Constraint Handling, Normalization, HV Reference Point, and Termination Criteria.

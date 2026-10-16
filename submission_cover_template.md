@@ -1,4 +1,4 @@
-# M.Tech Optimization Techniques — Lab Assignment 7
+# B.Tech Optimization Techniques — Lab Assignment 7
 ## Final Submission Cover Sheet
 
 ---
@@ -7,7 +7,7 @@
 - **Student Name:** Akshat Tikaria
 - **Roll Number:** 241070005
 - **Assigned Roll Number Index ($R$):** $R = 05$
-- **Academic Program:** M.Tech AI & Data Science / Computer Science & Engineering
+- **Academic Program:** B.Tech AI & Data Science / Computer Science & Engineering
 - **Course:** Optimization Techniques Laboratory (Lab Assignment 7)
 - **Topic:** Multi-Objective Optimization: 37 Algorithms, Trade-offs and Applications
 

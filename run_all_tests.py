@@ -53,7 +53,7 @@ def run_test_module(name: str, functions: list):
 
 def main():
     print("=" * 80)
-    print("M.TECH OPTIMIZATION TECHNIQUES - LAB ASSIGNMENT 7")
+    print("B.TECH OPTIMIZATION TECHNIQUES - LAB ASSIGNMENT 7")
     print("FULL UNIT TEST SUITE: 37 ALGORITHMS, SHARED TOOLKIT & PROBLEM BANK")
     print("=" * 80)
 

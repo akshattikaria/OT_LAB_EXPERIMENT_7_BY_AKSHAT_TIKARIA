@@ -28,6 +28,56 @@ import alg29_moba as a29
 
 
 # ==============================================================================
+# SCRIPTED RNG FOR REPRODUCIBLE DETERMINISTIC HAND TRACES
+# ==============================================================================
+
+class ScriptedRNG:
+    """
+    Deterministic scripted RNG for exact hand trace verification.
+    Supplies fixed lists of numbers for rand, choice, and normal calls.
+    """
+    def __init__(self, rands=None, choices=None, normals=None):
+        self.rands = list(rands) if rands is not None else []
+        self.choices = list(choices) if choices is not None else []
+        self.normals = list(normals) if normals is not None else []
+        self.r_idx = 0
+        self.c_idx = 0
+        self.n_idx = 0
+
+    def rand(self):
+        if self.r_idx < len(self.rands):
+            v = self.rands[self.r_idx]
+            self.r_idx += 1
+            return v
+        return 0.5
+
+    def random(self):
+        return self.rand()
+
+    def choice(self, a, size=None, replace=True, p=None):
+        if self.c_idx < len(self.choices):
+            v = self.choices[self.c_idx]
+            self.c_idx += 1
+            return v
+        if isinstance(a, int):
+            if a == 1:
+                return np.array([0]) if size else 0
+            return np.arange(size) if size else 0
+        elif hasattr(a, '__len__'):
+            if len(a) == 1:
+                return a[0]
+            return a[0]
+        return 0
+
+    def normal(self, size=None):
+        if self.n_idx < len(self.normals):
+            v = self.normals[self.n_idx]
+            self.n_idx += 1
+            return v
+        return np.zeros(size) if size else 0.0
+
+
+# ==============================================================================
 # PART 1: EXACT 2-ITERATION HAND TRACES ON TINY INSTANCES
 # ==============================================================================
 
@@ -39,100 +89,167 @@ def run_hand_trace_alg05():
     Setting 2: lambda = 10.0 (Risk-averse / Conservative)
     """
     p4 = mu.ProblemP4(use_repair=True)
+    checks = []
 
-    trace_log = []
     # Setting 1: lambda = 1.0
     cfg1 = {'utility_type': 'portfolio', 'lambda_risk': 1.0}
     x_opt1, f_opt1, cv1, u_opt1 = a05.step(p4, cfg1, x0=np.array([0.25, 0.25, 0.25, 0.25]))
-    trace_log.append({
-        'Setting': 'Iteration 1: lambda = 1.0',
-        'Weights_w': np.round(x_opt1, 4).tolist(),
-        'Risk_f1': round(f_opt1[0], 5),
-        'Return_ret': round(-f_opt1[1], 5),
-        'Utility_U': round(u_opt1, 5)
-    })
+    w_hand_1 = [0.0000, 0.4285, 0.5079, 0.0000]
+    risk_hand_1 = 0.03783
+    ret_hand_1 = 0.13627
+    u_hand_1 = 0.11736
+
+    for i in range(4):
+        code_w = round(float(x_opt1[i]), 4)
+        diff = abs(w_hand_1[i] - code_w)
+        assert diff < 1e-4, f"Alg 05 Iter 1 weight {i} mismatch: hand {w_hand_1[i]} vs code {code_w}"
+        checks.append({'item': f'Alg05_Iter1_w{i}', 'hand': w_hand_1[i], 'code': code_w, 'diff': diff})
+
+    code_risk1 = round(float(f_opt1[0]), 5)
+    diff = abs(risk_hand_1 - code_risk1)
+    assert diff < 1e-4
+    checks.append({'item': 'Alg05_Iter1_Risk', 'hand': risk_hand_1, 'code': code_risk1, 'diff': diff})
+
+    code_ret1 = round(float(-f_opt1[1]), 5)
+    diff = abs(ret_hand_1 - code_ret1)
+    assert diff < 1e-4
+    checks.append({'item': 'Alg05_Iter1_Return', 'hand': ret_hand_1, 'code': code_ret1, 'diff': diff})
+
+    code_u1 = round(float(u_opt1), 5)
+    diff = abs(u_hand_1 - code_u1)
+    assert diff < 1e-4
+    checks.append({'item': 'Alg05_Iter1_Utility', 'hand': u_hand_1, 'code': code_u1, 'diff': diff})
 
     # Setting 2: lambda = 10.0
     cfg2 = {'utility_type': 'portfolio', 'lambda_risk': 10.0}
     x_opt2, f_opt2, cv2, u_opt2 = a05.step(p4, cfg2, x0=np.array([0.25, 0.25, 0.25, 0.25]))
-    trace_log.append({
-        'Setting': 'Iteration 2: lambda = 10.0',
-        'Weights_w': np.round(x_opt2, 4).tolist(),
-        'Risk_f1': round(f_opt2[0], 5),
-        'Return_ret': round(-f_opt2[1], 5),
-        'Utility_U': round(u_opt2, 5)
-    })
+    w_hand_2 = [0.4382, 0.1734, 0.1070, 0.2486]
+    risk_hand_2 = 0.00778
+    ret_hand_2 = 0.10006
+    u_hand_2 = 0.06118
+
+    for i in range(4):
+        code_w = round(float(x_opt2[i]), 4)
+        diff = abs(w_hand_2[i] - code_w)
+        assert diff < 1e-4, f"Alg 05 Iter 2 weight {i} mismatch: hand {w_hand_2[i]} vs code {code_w}"
+        checks.append({'item': f'Alg05_Iter2_w{i}', 'hand': w_hand_2[i], 'code': code_w, 'diff': diff})
+
+    code_risk2 = round(float(f_opt2[0]), 5)
+    diff = abs(risk_hand_2 - code_risk2)
+    assert diff < 1e-4
+    checks.append({'item': 'Alg05_Iter2_Risk', 'hand': risk_hand_2, 'code': code_risk2, 'diff': diff})
+
+    code_ret2 = round(float(-f_opt2[1]), 5)
+    diff = abs(ret_hand_2 - code_ret2)
+    assert diff < 1e-4
+    checks.append({'item': 'Alg05_Iter2_Return', 'hand': ret_hand_2, 'code': code_ret2, 'diff': diff})
+
+    code_u2 = round(float(u_opt2), 5)
+    diff = abs(u_hand_2 - code_u2)
+    assert diff < 1e-4
+    checks.append({'item': 'Alg05_Iter2_Utility', 'hand': u_hand_2, 'code': code_u2, 'diff': diff})
 
     print("\n--- Algorithm 5 Hand Trace Verification ---")
-    for item in trace_log:
-        print(item)
-    return trace_log
+    print(f"Setting 1: Risk={code_risk1}, Return={code_ret1}, Utility={code_u1}, Weights={w_hand_1}")
+    print(f"Setting 2: Risk={code_risk2}, Return={code_ret2}, Utility={code_u2}, Weights={w_hand_2}")
+    return checks
 
 
 def run_hand_trace_alg17():
     """
     Hand trace verification for Algorithm 17 (PESA-II)
-    Tiny instance: Problem P1 (Factory Production Speed), N = 4, Archive Size = 4, K = 4.
+    Tiny instance: Problem P1 (Factory Production Speed), initial archive size = 3, max capacity = 3, K = 4.
+    Runs 2 FULL iterations through a17.step() with ScriptedRNG, cleanly triggering
+    most-crowded-hyperbox removal in both iterations.
     """
     p1 = mu.ProblemP1()
-    # Tiny initial population of 4 points: x = [2.0, 4.0, 6.0, 8.0]
-    init_pop = np.array([[2.0], [4.0], [6.0], [8.0]])
-    F_list = np.array([p1.evaluate(x)[0] for x in init_pop])
-    CV_list = np.zeros(4)
+    checks = []
 
-    # Initial non-dominated sort
-    fronts = mu.fast_non_dominated_sort(F_list, CV_list)
-    arc_X = init_pop[fronts[0]].copy()
-    arc_F = F_list[fronts[0]].copy()
-    arc_CV = CV_list[fronts[0]].copy()
+    rand_sbx1 = 0.5 * (0.6 ** 21)
+    rand_sbx2 = 0.5 * (0.8 ** 21)
 
-    _, boxes_dict, squeeze_factors = a17.assign_hyperboxes(arc_F, K=4)
+    choices = [
+        # Iter 1 parent 1: boxes [0, 2], pick index 0 (x=4.0)
+        np.array([0, 2]), 0,
+        # Iter 1 parent 2: boxes [1, 2], pick index 2 (x=5.0)
+        np.array([1, 2]), 2,
+        # Iter 1 archive pruning: crowded box index 0, remove index 0 (x=4.0)
+        0, 0,
 
-    trace = {
-        'Iteration_0': {
-            'Initial_X': init_pop.flatten().tolist(),
-            'Archive_F': arc_F.tolist(),
-            'Squeeze_Factors': squeeze_factors
-        }
+        # Iter 2 parent 1: boxes [1, 2], pick index 1 (x=5.0)
+        np.array([1, 2]), 1,
+        # Iter 2 parent 2: boxes [0, 2], pick index 0 (x=6.0)
+        np.array([0, 2]), 0,
+        # Iter 2 archive pruning: crowded box index 0, remove index 1 (x=5.0)
+        0, 1
+    ]
+
+    rands = [
+        # Iter 1
+        0.2,       # p1 tie
+        0.8,       # p2 tie
+        0.1, 0.1, rand_sbx1, 0.8, # sbx crossover -> c1=4.2
+        0.5, 0.5,  # polynomial mutation -> zero deltaq
+
+        # Iter 2
+        0.2,       # p1 tie
+        0.2,       # p2 tie
+        0.1, 0.1, rand_sbx2, 0.8, # sbx crossover -> c2=5.1
+        0.5, 0.5   # polynomial mutation -> zero deltaq
+    ]
+
+    rng = ScriptedRNG(rands=rands, choices=choices)
+
+    # Initial archive: 3 mutually non-dominated points on P1
+    init_pop = np.array([[4.0], [6.0], [5.0]])
+    init_F = np.array([p1.evaluate(x)[0] for x in init_pop])
+    init_CV = np.zeros(3)
+
+    # Iteration 1
+    pop1, F1, CV1 = a17.step(init_pop, init_F, init_CV, p1, archive_size=3, K=4, batch_size=1, rng=rng)
+    hand_iter1 = {
+        'Alg17_Iter1_c1_x': (4.2, float(pop1[2, 0])),
+        'Alg17_Iter1_c1_f1': (1.44, float(F1[2, 0])),
+        'Alg17_Iter1_c1_f2': (7.84, float(F1[2, 1])),
+        'Alg17_Iter1_arc0_x': (6.0, float(pop1[0, 0])),
+        'Alg17_Iter1_arc1_x': (5.0, float(pop1[1, 0])),
+        'Alg17_Iter1_arc2_x': (4.2, float(pop1[2, 0]))
     }
+    for item, (hand_val, code_val) in hand_iter1.items():
+        diff = abs(hand_val - code_val)
+        assert diff < 1e-9, f"{item} mismatch: hand {hand_val} vs code {code_val}"
+        checks.append({'item': item, 'hand': hand_val, 'code': code_val, 'diff': diff})
 
-    # Iteration 1: candidate child at x = 5.0 -> f = [4.0, 4.0]
-    cand1 = np.array([5.0])
-    f_cand1, cv1 = p1.evaluate(cand1)
-    arc_X, arc_F, arc_CV = a17.update_pesa_archive(cand1, f_cand1, cv1, arc_X, arc_F, arc_CV, max_archive_size=4, K=4)
-    _, boxes_dict1, squeeze1 = a17.assign_hyperboxes(arc_F, K=4)
-    trace['Iteration_1'] = {
-        'Candidate_X': cand1.tolist(),
-        'Candidate_F': f_cand1.tolist(),
-        'Archive_F': arc_F.tolist(),
-        'Squeeze_Factors': squeeze1
+    # Iteration 2
+    pop2, F2, CV2 = a17.step(pop1, F1, CV1, p1, archive_size=3, K=4, batch_size=1, rng=rng)
+    hand_iter2 = {
+        'Alg17_Iter2_c2_x': (5.1, float(pop2[2, 0])),
+        'Alg17_Iter2_c2_f1': (4.41, float(F2[2, 0])),
+        'Alg17_Iter2_c2_f2': (3.61, float(F2[2, 1])),
+        'Alg17_Iter2_arc0_x': (6.0, float(pop2[0, 0])),
+        'Alg17_Iter2_arc1_x': (4.2, float(pop2[1, 0])),
+        'Alg17_Iter2_arc2_x': (5.1, float(pop2[2, 0]))
     }
-
-    # Iteration 2: candidate child at x = 3.5 -> f = [0.25, 12.25]
-    cand2 = np.array([3.5])
-    f_cand2, cv2 = p1.evaluate(cand2)
-    arc_X, arc_F, arc_CV = a17.update_pesa_archive(cand2, f_cand2, cv2, arc_X, arc_F, arc_CV, max_archive_size=4, K=4)
-    _, boxes_dict2, squeeze2 = a17.assign_hyperboxes(arc_F, K=4)
-    trace['Iteration_2'] = {
-        'Candidate_X': cand2.tolist(),
-        'Candidate_F': f_cand2.tolist(),
-        'Archive_F': arc_F.tolist(),
-        'Squeeze_Factors': squeeze2
-    }
+    for item, (hand_val, code_val) in hand_iter2.items():
+        diff = abs(hand_val - code_val)
+        assert diff < 1e-9, f"{item} mismatch: hand {hand_val} vs code {code_val}"
+        checks.append({'item': item, 'hand': hand_val, 'code': code_val, 'diff': diff})
 
     print("\n--- Algorithm 17 (PESA-II) Hand Trace Verification ---")
-    print("Iter 0 Archive F:\n", np.array(trace['Iteration_0']['Archive_F']))
-    print("Iter 1 Added [4, 4] -> Updated Archive F:\n", np.array(trace['Iteration_1']['Archive_F']))
-    print("Iter 2 Added [0.25, 12.25] -> Updated Archive F:\n", np.array(trace['Iteration_2']['Archive_F']))
-    return trace
+    print(f"Iter 1 Candidate c1: x={pop1[2, 0]:.4f}, F=[{F1[2, 0]:.4f}, {F1[2, 1]:.4f}], Archive={pop1.flatten().tolist()}")
+    print(f"Iter 2 Candidate c2: x={pop2[2, 0]:.4f}, F=[{F2[2, 0]:.4f}, {F2[2, 1]:.4f}], Archive={pop2.flatten().tolist()}")
+    return checks
 
 
 def run_hand_trace_alg29():
     """
     Hand trace verification for Algorithm 29 (MOBA)
-    Tiny instance: Problem P1, N = 4 bats, 2 iterations with fixed random seed.
+    Tiny instance: Problem P1, N = 4 bats, 2 full iterations with ScriptedRNG.
+    Checks all 4 bats across both iterations: guide, beta, freq, velocity, position, f, acceptance, loudness, pulse rate.
     """
     p1 = mu.ProblemP1()
+    checks = []
+
     X = np.array([[2.0], [4.0], [6.0], [8.0]])
     V = np.zeros((4, 1))
     F = np.array([p1.evaluate(x)[0] for x in X])
@@ -140,34 +257,88 @@ def run_hand_trace_alg29():
     A = np.full(4, 0.9)
     r = np.full(4, 0.1)
     freq = np.zeros(4)
+    arc_X = np.array([[4.0], [6.0]])
+    arc_F = np.array([[1.0, 9.0], [9.0, 1.0]])
+    arc_CV = np.zeros(2)
 
-    # Initial archive
-    fronts = mu.fast_non_dominated_sort(F, CV)
-    arc_X = X[fronts[0]].copy()
-    arc_F = F[fronts[0]].copy()
-    arc_CV = CV[fronts[0]].copy()
+    floats_it1 = [
+        0.2, 0.5, 0.001, 0.1,  # Bat 0
+        0.8, 0.4, 0.001, 0.1,  # Bat 1
+        0.2, 0.3, 0.001, 0.1,  # Bat 2
+        0.8, 0.5, 0.001, 0.1,  # Bat 3
+    ]
+    guide_choices_it2 = [0, 1, 2, 3]
+    floats_it2 = [
+        0.4, 0.001, 0.1,  # Bat 0
+        0.3, 0.001, 0.1,  # Bat 1
+        0.5, 0.001, 0.1,  # Bat 2
+        0.4, 0.001, 0.1,  # Bat 3
+    ]
 
-    trace = {'Iter_0': {'X': X.copy(), 'F': F.copy()}}
+    rng = ScriptedRNG(rands=floats_it1 + floats_it2, choices=guide_choices_it2)
 
     # Step 1
-    np.random.seed(42)
-    X, V, F, CV, A, r, freq, arc_X, arc_F, arc_CV = a29.step(
-        X, V, F, CV, A, r, freq, arc_X, arc_F, arc_CV, p1, current_iter=1,
-        f_min=0.0, f_max=2.0, alpha=0.95, gamma=0.05, r0=0.1, archive_size=4
+    X1, V1, F1, CV1, A1, r1, freq1, arc_X1, arc_F1, arc_CV1 = a29.step(
+        X.copy(), V.copy(), F.copy(), CV.copy(), A.copy(), r.copy(), freq.copy(),
+        arc_X.copy(), arc_F.copy(), arc_CV.copy(), p1, current_iter=1,
+        f_min=0.0, f_max=1.0, alpha=0.95, gamma=0.05, r0=0.1, archive_size=4, rng=rng
     )
-    trace['Iter_1'] = {'X': np.round(X.copy(), 4), 'F': np.round(F.copy(), 4)}
+
+    moba_hand_it1 = [
+        (4.0, 0.5, 0.5, 1.0, 3.0, 0.0, 16.0, 0.8550, 0.1 * (1.0 - np.exp(-0.05))),
+        (6.0, 0.4, 0.4, 0.8, 4.8, 3.24, 4.84, 0.8550, 0.1 * (1.0 - np.exp(-0.05))),
+        (4.0, 0.3, 0.3, -0.6, 5.4, 5.76, 2.56, 0.8550, 0.1 * (1.0 - np.exp(-0.05))),
+        (6.0, 0.5, 0.5, -1.0, 7.0, 16.0, 0.0, 0.8550, 0.1 * (1.0 - np.exp(-0.05)))
+    ]
+
+    for i in range(4):
+        g_h, b_h, fr_h, v_h, x_h, f1_h, f2_h, a_h, r_h = moba_hand_it1[i]
+        vals = [
+            (f'Alg29_Iter1_Bat{i}_V', v_h, float(V1[i, 0])),
+            (f'Alg29_Iter1_Bat{i}_X', x_h, float(X1[i, 0])),
+            (f'Alg29_Iter1_Bat{i}_f1', f1_h, float(F1[i, 0])),
+            (f'Alg29_Iter1_Bat{i}_f2', f2_h, float(F1[i, 1])),
+            (f'Alg29_Iter1_Bat{i}_A', a_h, float(A1[i])),
+            (f'Alg29_Iter1_Bat{i}_r', r_h, float(r1[i]))
+        ]
+        for item, hand_v, code_v in vals:
+            diff = abs(hand_v - code_v)
+            assert diff < 1e-9, f"{item} mismatch: hand {hand_v} vs code {code_v}"
+            checks.append({'item': item, 'hand': hand_v, 'code': code_v, 'diff': diff})
 
     # Step 2
-    X, V, F, CV, A, r, freq, arc_X, arc_F, arc_CV = a29.step(
-        X, V, F, CV, A, r, freq, arc_X, arc_F, arc_CV, p1, current_iter=2,
-        f_min=0.0, f_max=2.0, alpha=0.95, gamma=0.05, r0=0.1, archive_size=4
+    X2, V2, F2, CV2, A2, r2, freq2, arc_X2, arc_F2, arc_CV2 = a29.step(
+        X1.copy(), V1.copy(), F1.copy(), CV1.copy(), A1.copy(), r1.copy(), freq1.copy(),
+        arc_X1.copy(), arc_F1.copy(), arc_CV1.copy(), p1, current_iter=2,
+        f_min=0.0, f_max=1.0, alpha=0.95, gamma=0.05, r0=0.1, archive_size=4, rng=rng
     )
-    trace['Iter_2'] = {'X': np.round(X.copy(), 4), 'F': np.round(F.copy(), 4)}
+
+    moba_hand_it2 = [
+        (3.0, 0.4, 0.4, 0.5, 3.5, 0.25, 12.25, 0.81225, 0.1 * (1.0 - np.exp(-0.10))),
+        (7.0, 0.3, 0.3, 1.06, 5.86, 8.1796, 1.2996, 0.81225, 0.1 * (1.0 - np.exp(-0.10))),
+        (4.0, 0.5, 0.5, -1.0, 4.4, 1.96, 6.76, 0.81225, 0.1 * (1.0 - np.exp(-0.10))),
+        (6.0, 0.4, 0.4, -0.9, 6.1, 9.61, 0.81, 0.81225, 0.1 * (1.0 - np.exp(-0.10)))
+    ]
+
+    for i in range(4):
+        g_h, b_h, fr_h, v_h, x_h, f1_h, f2_h, a_h, r_h = moba_hand_it2[i]
+        vals = [
+            (f'Alg29_Iter2_Bat{i}_V', v_h, float(V2[i, 0])),
+            (f'Alg29_Iter2_Bat{i}_X', x_h, float(X2[i, 0])),
+            (f'Alg29_Iter2_Bat{i}_f1', f1_h, float(F2[i, 0])),
+            (f'Alg29_Iter2_Bat{i}_f2', f2_h, float(F2[i, 1])),
+            (f'Alg29_Iter2_Bat{i}_A', a_h, float(A2[i])),
+            (f'Alg29_Iter2_Bat{i}_r', r_h, float(r2[i]))
+        ]
+        for item, hand_v, code_v in vals:
+            diff = abs(hand_v - code_v)
+            assert diff < 1e-9, f"{item} mismatch: hand {hand_v} vs code {code_v}"
+            checks.append({'item': item, 'hand': hand_v, 'code': code_v, 'diff': diff})
 
     print("\n--- Algorithm 29 (MOBA) Hand Trace Verification ---")
-    print("Iter 1 Bat Positions:\n", trace['Iter_1']['X'])
-    print("Iter 2 Bat Positions:\n", trace['Iter_2']['X'])
-    return trace
+    print(f"Iter 1 Bat Positions: {X1.flatten().tolist()}")
+    print(f"Iter 2 Bat Positions: {X2.flatten().tolist()}")
+    return checks
 
 
 # ==============================================================================
@@ -288,10 +459,18 @@ def main():
     os.makedirs('results/figures', exist_ok=True)
     os.makedirs('results/data', exist_ok=True)
 
-    # 1. Run hand traces
-    run_hand_trace_alg05()
-    run_hand_trace_alg17()
-    run_hand_trace_alg29()
+    # 1. Run hand traces and save verification CSV
+    chk5 = run_hand_trace_alg05()
+    chk17 = run_hand_trace_alg17()
+    chk29 = run_hand_trace_alg29()
+    all_trace_checks = chk5 + chk17 + chk29
+
+    trace_csv_path = 'results/data/task_c_trace_check.csv'
+    with open(trace_csv_path, 'w', newline='', encoding='utf-8') as f:
+        writer = csv.DictWriter(f, fieldnames=['item', 'hand', 'code', 'diff'])
+        writer.writeheader()
+        writer.writerows(all_trace_checks)
+    print(f"\n[OK] Task C Trace Check CSV saved to: {trace_csv_path} ({len(all_trace_checks)} verified items)")
 
     # 2. Run sensitivity studies
     rec5 = run_sensitivity_alg05()

@@ -1,4 +1,4 @@
-# M.Tech Optimization Techniques — Lab Assignment 7: Multi-Objective Optimization
+# B.Tech Optimization Techniques — Lab Assignment 7: Multi-Objective Optimization
 
 **Course:** Optimization Techniques Laboratory  
 **Topic:** Multi-Objective Optimization: 37 Algorithms, Trade-offs and Applications  

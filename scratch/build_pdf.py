@@ -135,7 +135,7 @@ def inline_format(text):
 cover_html = """
 <div style="text-align:center; padding-top:120px;">
 <h1 style="font-size:28px;">Multi-Objective Optimization:<br>37 Algorithms, Trade-offs and Applications</h1>
-<h2 style="font-size:20px; color:#555;">M.Tech Optimization Techniques — Lab Assignment 7</h2>
+<h2 style="font-size:20px; color:#555;">B.Tech Optimization Techniques — Lab Assignment 7</h2>
 <br><br>
 <p style="font-size:16px;"><strong>Student Name:</strong> Akshat Tikaria</p>
 <p style="font-size:16px;"><strong>Roll Number:</strong> 241070005 (R = 05)</p>

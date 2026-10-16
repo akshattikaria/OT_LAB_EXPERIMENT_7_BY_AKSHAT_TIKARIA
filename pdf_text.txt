@@ -3,7 +3,7 @@ Lab Assignment 7 — Multiobjective
 Optimization: 37 Algorithms, Trade-offs and
 Applications
 Optimization Techniques Lab · Department of Artificial Intelligence & Data Science ·
-M.Tech · Based on Chapter 5 (Parts 1–4 and Bonus Module 5E) · Issued: 5 October 2026
+B.Tech · Based on Chapter 5 (Parts 1–4 and Bonus Module 5E) · Issued: 5 October 2026
 1. Aim and Learning Outcomes
 Real design problems have several conflicting goals, so the answer is a set of trade-offs (a
 Pareto front), not one point. In this lab you will build every multiobjective algorithm taught

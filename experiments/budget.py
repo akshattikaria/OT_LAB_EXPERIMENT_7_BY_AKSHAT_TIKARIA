@@ -131,7 +131,8 @@ def calibrate_iterations(alg_num: int, module: Any, problem: Any,
 
 
 def run_budgeted(alg_num: int, module: Any, problem: Any, seed: int = 42,
-                 budget: int = 10000, target_iter: Optional[int] = None) -> Dict[str, Any]:
+                 budget: int = 10000, target_iter: Optional[int] = None,
+                 **extra_kwargs) -> Dict[str, Any]:
     """
     Executes an algorithm with an exact calibrated evaluation count or unbudgeted run.
 
@@ -147,14 +148,14 @@ def run_budgeted(alg_num: int, module: Any, problem: Any, seed: int = 42,
         if alg_num in [8, 9]:
             # MCDM ranking
             X, w, is_ben = cp.get_decision_matrix()
-            res = module.run(X, w, is_ben)
+            res = module.run(X, w, is_ben, **extra_kwargs)
             res['evaluations'] = len(X)
             res['counted_evals'] = len(X)
             return res
         elif alg_num in [36, 37]:
-            res = module.run(cp, max_iter=100, seed=seed)
+            res = module.run(cp, max_iter=100, seed=seed, **extra_kwargs)
         else:
-            res = module.run(cp, seed=seed)
+            res = module.run(cp, seed=seed, **extra_kwargs)
 
         res['evaluations'] = cp.evaluations
         res['counted_evals'] = cp.evaluations
@@ -171,6 +172,7 @@ def run_budgeted(alg_num: int, module: Any, problem: Any, seed: int = 42,
     run_kwargs = dict(base_kwargs)
     run_kwargs[param_name] = target_iter
     run_kwargs['seed'] = seed
+    run_kwargs.update(extra_kwargs)
 
     cp = mu.CountingProblem(raw_prob, max_evals=budget)
     res = module.run(cp, **run_kwargs)

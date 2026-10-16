@@ -15,7 +15,7 @@ for r in rows:
 # Let's craft the complete updated task_b_master_table.md
 content = """# Task B — Master Comparison Table with Evidence (All 37 Algorithms)
 
-## Optimization Techniques Lab · M.Tech AI & Data Science
+## Optimization Techniques Lab · B.Tech AI & Data Science
 **Topic:** Multi-Objective Optimization: 37 Algorithms, Trade-offs and Applications  
 **Scope:** Complete systematic analysis across all 37 algorithms spanning Classical, Ranking/MCDM, Non-Elitist Evolutionary, Elitist & Decomposition, Swarm/Physics Metaheuristics, Many-Objective, Indicator, Preference, and Gradient Families. Every algorithm includes at least 4 advantages and at least 4 disadvantages, with at least 2 advantages and 2 disadvantages of each algorithm citing real numerical metrics (HV, IGD, runtime) and figure references from empirical runs in `results/data/task_a_log.csv` and `results/figures/`.
 

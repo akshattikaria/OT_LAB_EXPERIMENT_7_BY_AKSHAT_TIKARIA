@@ -22,9 +22,9 @@ Safety rules active: only edit inside project folder; move files to _old/ before
 - [x] **S4** STATUS — experiments/status.py; replace hard-coded status in run_task_a.py
 - [x] **S5a** p13_network.py (MTL network with forward/backward/grad-check)
 - [x] **S5b** P8 coordinates saved to results/data/p8_coords.csv + problem_bank.md
-- [ ] **S6** HAND TRACES — ScriptedRNG, full MOBA+PESA-II 2-iteration trace with ASSERTs
-- [ ] **S7** EXPERIMENTS — full re-run, multiprocessing, smoke test first
-- [ ] **S8** REPORT — build_claims.py, rebuild all .md from CSVs, fix M.Tech→B.Tech
+- [x] **S6** HAND TRACES — ScriptedRNG, full MOBA+PESA-II 2-iteration trace with ASSERTs
+- [x] **S7** EXPERIMENTS — full re-run, multiprocessing, smoke test first
+- [x] **S8** REPORT — build_claims.py, rebuild all .md from CSVs, fix M.Tech→B.Tech
 - [ ] **S9** PACKAGING — new code.zip, raw_results.zip, report.pdf
 - [ ] **S10** FINAL AUDIT — audit_final.py
 - [ ] **S12** FINISH — summary paragraph
@@ -50,6 +50,9 @@ Safety rules active: only edit inside project folder; move files to _old/ before
 | S4 | ✅ DONE | experiments/status.py implemented and wired into run_task_a.py; rigorous quantitative criteria + measured reasons verified on synthetic & live runs. |
 | S5a | ✅ DONE | p13_network.py created (NumPy MTL net: BCE+MSE, analytical backprop, grad check error 3.5e-7 < 1e-5; Equal vs MGDA vs GradNorm on standard and 100x imbalance saved to CSV and figure). |
 | S5b | ✅ DONE | ProblemP8 coordinates generated under seed 7, saved to results/data/p8_coords.csv, table documented in report/problem_bank.md. |
+| S6 | ✅ DONE | ScriptedRNG implemented; full 2-iteration traces executed for Alg05, Alg17 (capacity 3 hyperbox pruning), and Alg29 (4 bats x 2 iters); all 74 variables asserted to <1e-9 (max diff 3.55e-15); saved results/data/task_c_trace_check.csv; report/task_c_deep_dive.md updated with exact derivations and tables. |
+| S7 | ✅ DONE | Full experimental sweep complete: Task A (37 algs, 65 runs, seed 42), Task C sensitivity (3 values x 10 seeds), Task D (multiprocessing pool, 1-seed smoke test verified non-empty, full 10-seed sweep across P3/P5 14 algs, P10 5 algs, P8 4 algs, 370 raw seed files cached in results/data/raw/); all master CSVs and figures generated. |
+| S8 | ✅ DONE | report/build_claims.py executed: rebuilt task_a_log.md, task_b_master_table.md, task_c_deep_dive.md, task_d_comparisons.md, task_e_selection.md, executive_summary.md directly from CSVs; 23 occurrences of M.Tech replaced with B.Tech; all claim checks verified (0 M.Tech, 0 mermaid, 0 IGD>10). |
 
 
 
